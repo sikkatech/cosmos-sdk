@@ -35,7 +35,7 @@ const (
 // ShowKeysCmd shows key information for a given key name.
 func ShowKeysCmd() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "show [name [name...]]",
+		Use:   "show [name_or_address [name_or_address...]]",
 		Short: "Show key info for the given name",
 		Long: `Return public details of a single local key. If multiple names are
 provided, then an ephemeral multisig key will be created under the name "multi"
@@ -62,14 +62,14 @@ func runShowCmd(cmd *cobra.Command, args []string) (err error) {
 		return err
 	}
 	if len(args) == 1 {
-		info, err = kb.Get(args[0])
+		info, err = fetchKey(kb, args[0])
 		if err != nil {
-			return err
+			return fmt.Errorf("not a valid name or address: %v", err)
 		}
 	} else {
 		pks := make([]tmcrypto.PubKey, len(args))
-		for i, keyName := range args {
-			info, err := kb.Get(keyName)
+		for i, keyref := range args {
+			info, err := fetchKey(kb, keyref)
 			if err != nil {
 				return err
 			}
@@ -140,6 +140,21 @@ func runShowCmd(cmd *cobra.Command, args []string) (err error) {
 	}
 
 	return nil
+}
+
+func fetchKey(kb keys.Keybase, keyref string) (keys.Info, error) {
+	info, err := kb.Get(keyref)
+	if err != nil {
+		accAddr, err := sdk.AccAddressFromBech32(keyref)
+		if err != nil {
+			return info, fmt.Errorf("not a valid name or address: %v", err)
+		}
+		info, err = kb.GetByAddress(accAddr)
+		if err != nil {
+			return info, err
+		}
+	}
+	return info, nil
 }
 
 func validateMultisigThreshold(k, nKeys int) error {

@@ -1,6 +1,7 @@
 package keys
 
 import (
+	"encoding/hex"
 	"fmt"
 	"reflect"
 	"strings"
@@ -464,7 +465,7 @@ func (kb dbKeybase) writeInfo(name string, info Info) {
 }
 
 func addrKey(address types.AccAddress) []byte {
-	return []byte(fmt.Sprintf("%s.%s", address.String(), addressSuffix))
+	return []byte(fmt.Sprintf("%s.%s", hex.EncodeToString(address.Bytes()), addressSuffix))
 }
 
 func infoKey(name string) []byte {
