@@ -149,9 +149,9 @@ func fetchKey(kb keys.Keybase, keyref string) (keys.Info, error) {
 		if err != nil {
 			return info, fmt.Errorf("not a valid name or address: %v", err)
 		}
-		info, err = kb.GetByAddress(accAddr)
+		return kb.GetByAddress(accAddr)
 		if err != nil {
-			return info, err
+			return info, fmt.Errorf("couldn't find key by either name or address: %v", err)
 		}
 	}
 	return info, nil
