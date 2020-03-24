@@ -36,8 +36,8 @@ const (
 func ShowKeysCmd() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "show [name_or_address [name_or_address...]]",
-		Short: "Show key info for the given name",
-		Long: `Return public details of a single local key. If multiple names are
+		Short: "Retrieve key information for the given by name or address",
+		Long: `Return public details of a single local key. If multiple names or addresses are
 provided, then an ephemeral multisig key will be created under the name "multi"
 consisting of all the keys provided by name and multisig threshold.`,
 		Args: cobra.MinimumNArgs(1),
