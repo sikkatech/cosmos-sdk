@@ -42,10 +42,10 @@ require (
 	github.com/tendermint/crypto v0.0.0-20191022145703-50d29ede1e15
 	github.com/tendermint/go-amino v0.15.1
 	github.com/tendermint/tendermint v0.34.0-rc3
-	github.com/tendermint/tm-db v0.6.1
+	github.com/tendermint/tm-db v0.6.2
 	golang.org/x/crypto v0.0.0-20200709230013-948cd5f35899
 	google.golang.org/genproto v0.0.0-20200526211855-cb27e3aa2013
-	google.golang.org/grpc v1.31.0
+	google.golang.org/grpc v1.31.1
 	google.golang.org/protobuf v1.25.0
 	gopkg.in/yaml.v2 v2.3.0
 )
