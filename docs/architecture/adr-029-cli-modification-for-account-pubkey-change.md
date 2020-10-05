@@ -14,6 +14,8 @@ As referenced in [ADR-028](https://github.com/sikkatech/cosmos-sdk/blob/sunny/ch
 
 There are several things to modify in case of single address is assigned to several pubkeys.
 
+- Another potential problem is `--sequence` management on cli side.
+
 ## Decision
 
 We're going to add an addition to the cli keys wallet to be able to change the address of a key.
@@ -47,6 +49,8 @@ This will add complexity to signing operation.
 
 - And `alice` key won’t be useful any more as chain only think as `alice_new` public key and address set is the correct one.
 `alice` key will be only useful when user revert pubkey from `alice_new` to `alice`.
+
+- Another potential problem is since sequence will be managed by pubkey basis, cli wallet should be fetching sequence by pubkey instead of sequence by account as it is now.
 
 ### Neutral
 
