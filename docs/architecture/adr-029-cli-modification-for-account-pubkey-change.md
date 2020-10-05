@@ -12,9 +12,8 @@ Proposed
 
 As referenced in [ADR-028](https://github.com/sikkatech/cosmos-sdk/blob/sunny/change-pubkey/docs/architecture/adr-028-change-pubkey.md), we need to change pubkey of an account for security reasons but with current cli wallet there are few lack functionalities to take care of in case of pubkey change of an account.
 
-There are several things to modify in case of single address is assigned to several pubkeys.
-
-- Another potential problem is `--sequence` management on cli side.
+One potential problem is `--sequence` management on cli wallet.  
+Another potential problem is transaction signing process where `--from` flag use address instead of a key.  
 
 ## Decision
 
