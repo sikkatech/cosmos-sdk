@@ -33,10 +33,10 @@ If you want to use a specific address, you can use a new `--from-address` but st
 
 E.g. signing with address should use `--from-address` and `--from` flag.
 ```sh
-gaiacli tx sign XXX.json --from alice_new --from-address cosmos1abcd
+gaiacli tx sign XXX.json --from alice_new --from-address cosmos1dcba
 ```
 
-Probably can come up with better names than --from and --from-address
+Probably can come up with better names than `--from` and `--from-address`.
 
 ## Consequences
 
