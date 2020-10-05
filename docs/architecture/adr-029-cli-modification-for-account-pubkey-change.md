@@ -28,6 +28,9 @@ Signing with new key(`alice_new`) after changing `alice_new` account's address t
 ```sh
 gaiacli tx sign XXX.json --from alice_new
 ```
+
+**Warn**
+
 We won't allow `--from` to use an address.
 If you want to use a specific address, you can use a new `--from-address` but still choose the key to sign with using the `--from` flag. The `--from` flag becomes more of a “sign with” flag. And the tx by default uses the address associated with the key, unless over-ridden by the `--from-address` flag
 
