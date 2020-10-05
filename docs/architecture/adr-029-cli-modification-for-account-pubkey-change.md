@@ -28,13 +28,15 @@ Signing with new key(`alice_new`) after changing `alice_new` account's address t
 ```sh
 gaiacli tx sign XXX.json --from alice_new
 ```
+We won't just not allow `--from` to use an address.
+If you want to use a specific address, you can use a new `--from-address` but still choose the key to sign with using the `--from` flag. The `--from` flag becomes more of a “sign with” flag. And the tx by default uses the address associated with the key, unless over-ridden by the `--from-address` flag
 
-Signing with address
+Signing with address should use `--from-address` and `--from` flag.
 ```sh
-gaiacli tx sign XXX.json --from cosmos1abcd
+gaiacli tx sign XXX.json --from alice_new --from-address cosmos1abcd
 ```
-It won't be working correctly as `cosmos1abcd` is associated to 2 accounts. To avoid this, signing operation should call chain to get the latest pubkey of an account and find the account that has same account and same `pubkey`.
-This will add complexity to signing operation.
+
+Probably can come up with better names than --from and --from-address
 
 ## Consequences
 
