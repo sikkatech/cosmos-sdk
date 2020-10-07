@@ -21,6 +21,8 @@ type Info interface {
 	GetPubKey() crypto.PubKey
 	// Address
 	GetAddress() types.AccAddress
+	// WithAddress
+	WithAddress(types.AccAddress) Info
 	// Bip44 Path
 	GetPath() (*hd.BIP44Params, error)
 	// Algo
@@ -37,18 +39,20 @@ var (
 // localInfo is the public information about a locally stored key
 // Note: Algo must be last field in struct for backwards amino compatibility
 type localInfo struct {
-	Name         string        `json:"name"`
-	PubKey       crypto.PubKey `json:"pubkey"`
-	PrivKeyArmor string        `json:"privkey.armor"`
-	Algo         hd.PubKeyType `json:"algo"`
+	Name         string           `json:"name"`
+	PubKey       crypto.PubKey    `json:"pubkey"`
+	PrivKeyArmor string           `json:"privkey.armor"`
+	Algo         hd.PubKeyType    `json:"algo"`
+	Address      types.AccAddress `json:"address"`
 }
 
-func newLocalInfo(name string, pub crypto.PubKey, privArmor string, algo hd.PubKeyType) Info {
+func newLocalInfo(name string, pub crypto.PubKey, privArmor string, algo hd.PubKeyType, address types.AccAddress) Info {
 	return &localInfo{
 		Name:         name,
 		PubKey:       pub,
 		PrivKeyArmor: privArmor,
 		Algo:         algo,
+		Address:      address,
 	}
 }
 
@@ -69,7 +73,12 @@ func (i localInfo) GetPubKey() crypto.PubKey {
 
 // GetType implements Info interface
 func (i localInfo) GetAddress() types.AccAddress {
-	return i.PubKey.Address().Bytes()
+	return i.Address
+}
+
+func (i localInfo) WithAddress(address types.AccAddress) Info {
+	i.Address = address
+	return i
 }
 
 // GetType implements Info interface
@@ -85,18 +94,20 @@ func (i localInfo) GetPath() (*hd.BIP44Params, error) {
 // ledgerInfo is the public information about a Ledger key
 // Note: Algo must be last field in struct for backwards amino compatibility
 type ledgerInfo struct {
-	Name   string         `json:"name"`
-	PubKey crypto.PubKey  `json:"pubkey"`
-	Path   hd.BIP44Params `json:"path"`
-	Algo   hd.PubKeyType  `json:"algo"`
+	Name    string           `json:"name"`
+	PubKey  crypto.PubKey    `json:"pubkey"`
+	Path    hd.BIP44Params   `json:"path"`
+	Algo    hd.PubKeyType    `json:"algo"`
+	Address types.AccAddress `json:"address"`
 }
 
-func newLedgerInfo(name string, pub crypto.PubKey, path hd.BIP44Params, algo hd.PubKeyType) Info {
+func newLedgerInfo(name string, pub crypto.PubKey, path hd.BIP44Params, algo hd.PubKeyType, address types.AccAddress) Info {
 	return &ledgerInfo{
-		Name:   name,
-		PubKey: pub,
-		Path:   path,
-		Algo:   algo,
+		Name:    name,
+		PubKey:  pub,
+		Path:    path,
+		Algo:    algo,
+		Address: address,
 	}
 }
 
@@ -117,7 +128,12 @@ func (i ledgerInfo) GetPubKey() crypto.PubKey {
 
 // GetAddress implements Info interface
 func (i ledgerInfo) GetAddress() types.AccAddress {
-	return i.PubKey.Address().Bytes()
+	return i.Address
+}
+
+func (i ledgerInfo) WithAddress(address types.AccAddress) Info {
+	i.Address = address
+	return i
 }
 
 // GetPath implements Info interface
@@ -134,16 +150,18 @@ func (i ledgerInfo) GetPath() (*hd.BIP44Params, error) {
 // offlineInfo is the public information about an offline key
 // Note: Algo must be last field in struct for backwards amino compatibility
 type offlineInfo struct {
-	Name   string        `json:"name"`
-	PubKey crypto.PubKey `json:"pubkey"`
-	Algo   hd.PubKeyType `json:"algo"`
+	Name    string           `json:"name"`
+	PubKey  crypto.PubKey    `json:"pubkey"`
+	Algo    hd.PubKeyType    `json:"algo"`
+	Address types.AccAddress `json:"address"`
 }
 
-func newOfflineInfo(name string, pub crypto.PubKey, algo hd.PubKeyType) Info {
+func newOfflineInfo(name string, pub crypto.PubKey, algo hd.PubKeyType, address types.AccAddress) Info {
 	return &offlineInfo{
-		Name:   name,
-		PubKey: pub,
-		Algo:   algo,
+		Name:    name,
+		PubKey:  pub,
+		Algo:    algo,
+		Address: address,
 	}
 }
 
@@ -169,7 +187,12 @@ func (i offlineInfo) GetAlgo() hd.PubKeyType {
 
 // GetAddress implements Info interface
 func (i offlineInfo) GetAddress() types.AccAddress {
-	return i.PubKey.Address().Bytes()
+	return i.Address
+}
+
+func (i offlineInfo) WithAddress(address types.AccAddress) Info {
+	i.Address = address
+	return i
 }
 
 // GetPath implements Info interface
@@ -186,12 +209,13 @@ type multisigPubKeyInfo struct {
 type multiInfo struct {
 	Name      string               `json:"name"`
 	PubKey    crypto.PubKey        `json:"pubkey"`
+	Address   types.AccAddress     `json:"address"`
 	Threshold uint                 `json:"threshold"`
 	PubKeys   []multisigPubKeyInfo `json:"pubkeys"`
 }
 
 // NewMultiInfo creates a new multiInfo instance
-func NewMultiInfo(name string, pub crypto.PubKey) Info {
+func NewMultiInfo(name string, pub crypto.PubKey, address types.AccAddress) Info {
 	multiPK := pub.(*multisig.LegacyAminoPubKey)
 
 	pubKeys := make([]multisigPubKeyInfo, len(multiPK.PubKeys))
@@ -203,6 +227,7 @@ func NewMultiInfo(name string, pub crypto.PubKey) Info {
 	return &multiInfo{
 		Name:      name,
 		PubKey:    pub,
+		Address:   address,
 		Threshold: uint(multiPK.Threshold),
 		PubKeys:   pubKeys,
 	}
@@ -225,7 +250,12 @@ func (i multiInfo) GetPubKey() crypto.PubKey {
 
 // GetAddress implements Info interface
 func (i multiInfo) GetAddress() types.AccAddress {
-	return i.PubKey.Address().Bytes()
+	return i.Address
+}
+
+func (i multiInfo) WithAddress(address types.AccAddress) Info {
+	i.Address = address
+	return i
 }
 
 // GetPath implements Info interface

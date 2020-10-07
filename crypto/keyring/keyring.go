@@ -63,6 +63,9 @@ type Keyring interface {
 	Delete(uid string) error
 	DeleteByAddress(address sdk.Address) error
 
+	// ChangeAddress change address of a keyring
+	ChangeAddress(uid string, address sdk.AccAddress) error
+
 	// NewMnemonic generates a new mnemonic, derives a hierarchical deterministic
 	// key from that, and persists it to the storage. Returns the generated mnemonic and the key
 	// Info. It returns an error if it fails to generate a key for the given algo type, or if
@@ -360,7 +363,7 @@ func (ks keystore) SaveLedgerKey(uid string, algo SignatureAlgo, hrp string, coi
 }
 
 func (ks keystore) writeLedgerKey(name string, pub tmcrypto.PubKey, path hd.BIP44Params, algo hd.PubKeyType) (Info, error) {
-	info := newLedgerInfo(name, pub, path, algo)
+	info := newLedgerInfo(name, pub, path, algo, pub.Address().Bytes())
 	if err := ks.writeInfo(info); err != nil {
 		return nil, err
 	}
@@ -402,6 +405,21 @@ func (ks keystore) Delete(uid string) error {
 	}
 
 	err = ks.db.Remove(string(infoKey(uid)))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (ks keystore) ChangeAddress(uid string, address sdk.AccAddress) error {
+	info, err := ks.Key(uid)
+	if err != nil {
+		return err
+	}
+	info = info.WithAddress(address)
+
+	err = ks.writeInfo(info)
 	if err != nil {
 		return err
 	}
@@ -695,7 +713,7 @@ func (ks keystore) writeLocalKey(name string, priv tmcrypto.PrivKey, algo hd.Pub
 	// encrypt private key using keyring
 	pub := priv.PubKey()
 
-	info := newLocalInfo(name, pub, string(CryptoCdc.MustMarshalBinaryBare(priv)), algo)
+	info := newLocalInfo(name, pub, string(CryptoCdc.MustMarshalBinaryBare(priv)), algo, pub.Address().Bytes())
 	if err := ks.writeInfo(info); err != nil {
 		return nil, err
 	}
@@ -754,7 +772,7 @@ func (ks keystore) existsInDb(info Info) (bool, error) {
 }
 
 func (ks keystore) writeOfflineKey(name string, pub tmcrypto.PubKey, algo hd.PubKeyType) (Info, error) {
-	info := newOfflineInfo(name, pub, algo)
+	info := newOfflineInfo(name, pub, algo, pub.Address().Bytes())
 	err := ks.writeInfo(info)
 	if err != nil {
 		return nil, err
@@ -764,7 +782,7 @@ func (ks keystore) writeOfflineKey(name string, pub tmcrypto.PubKey, algo hd.Pub
 }
 
 func (ks keystore) writeMultisigKey(name string, pub tmcrypto.PubKey) (Info, error) {
-	info := NewMultiInfo(name, pub)
+	info := NewMultiInfo(name, pub, pub.Address().Bytes())
 	err := ks.writeInfo(info)
 	if err != nil {
 		return nil, err
