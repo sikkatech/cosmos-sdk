@@ -18,7 +18,7 @@ func TestBech32KeysOutput(t *testing.T) {
 
 	multisigPks := kmultisig.NewLegacyAminoPubKey(1, []crypto.PubKey{tmpKey})
 	multiInfo := NewMultiInfo("multisig", multisigPks, multisigPks.Address().Bytes())
-	accAddr := sdk.AccAddress(multiInfo.GetPubKey().Address().Bytes())
+	accAddr := sdk.AccAddress(multiInfo.GetAddress().Bytes())
 	bechPubKey := sdk.MustBech32ifyPubKey(sdk.Bech32PubKeyTypeAccPub, multiInfo.GetPubKey())
 
 	expectedOutput := NewKeyOutput(multiInfo.GetName(), multiInfo.GetType().String(), accAddr.String(), bechPubKey)

@@ -135,7 +135,7 @@ func (acc BaseAccount) Validate() error {
 		return err
 	}
 
-	if !bytes.Equal(acc.GetPubKey().Address().Bytes(), accAddr.Bytes()) {
+	if !bytes.Equal(acc.GetAddress().Bytes(), accAddr.Bytes()) {
 		return errors.New("account address and pubkey address do not match")
 	}
 

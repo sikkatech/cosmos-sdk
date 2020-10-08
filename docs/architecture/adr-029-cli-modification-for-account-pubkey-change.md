@@ -41,6 +41,14 @@ gaiacli tx sign XXX.json --from alice_new --from-address cosmos1dcba
 
 Probably can come up with better names than `--from` and `--from-address`.
 
+e.g.
+```
+simd keys add test1 --keyring-backend=test
+simd keys add test1_new --keyring-backend=test
+simd keys change-address test1_new cosmos16cnu2pxhg66zau3rua8nvuha7jm7glrq0wtpkc --keyring-backend=test
+simd keys show test1_new  --keyring-backend=test
+```
+
 ## Consequences
 
 ### Positive

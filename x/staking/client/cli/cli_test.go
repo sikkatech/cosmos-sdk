@@ -79,7 +79,7 @@ func (s *IntegrationTestSuite) TestNewCreateValidatorCmd() {
 	info, _, err := val.ClientCtx.Keyring.NewMnemonic("NewValidator", keyring.English, sdk.FullFundraiserPath, hd.Secp256k1)
 	s.Require().NoError(err)
 
-	newAddr := sdk.AccAddress(info.GetPubKey().Address())
+	newAddr := sdk.AccAddress(info.GetAddress())
 
 	_, err = banktestutil.MsgSendExec(
 		val.ClientCtx,
@@ -1031,7 +1031,7 @@ func (s *IntegrationTestSuite) TestNewCmdDelegate() {
 	info, _, err := val.ClientCtx.Keyring.NewMnemonic("NewAccount", keyring.English, sdk.FullFundraiserPath, hd.Secp256k1)
 	s.Require().NoError(err)
 
-	newAddr := sdk.AccAddress(info.GetPubKey().Address())
+	newAddr := sdk.AccAddress(info.GetAddress())
 
 	_, err = banktestutil.MsgSendExec(
 		val.ClientCtx,

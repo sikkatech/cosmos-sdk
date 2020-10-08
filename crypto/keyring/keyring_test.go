@@ -215,7 +215,7 @@ func TestExportImportKeyRing(t *testing.T) {
 	john, err := kb.Key("john")
 	require.NoError(t, err)
 	require.Equal(t, info.GetName(), "john")
-	johnAddr := info.GetPubKey().Address()
+	johnAddr := info.GetAddress()
 
 	armor, err := kb.ExportPrivKeyArmor("john", "apassphrase")
 	require.NoError(t, err)
@@ -228,7 +228,7 @@ func TestExportImportKeyRing(t *testing.T) {
 	john2, err := kb.Key("john2")
 	require.NoError(t, err)
 
-	require.Equal(t, john.GetPubKey().Address(), johnAddr)
+	require.Equal(t, john.GetAddress(), johnAddr)
 	require.Equal(t, john.GetName(), "john")
 	require.Equal(t, john.GetAddress(), john2.GetAddress())
 	require.Equal(t, john.GetAlgo(), john2.GetAlgo())
@@ -246,11 +246,11 @@ func TestExportImportPubKeyKeyRing(t *testing.T) {
 	require.Nil(t, err)
 	require.NotEqual(t, info, "")
 	require.Equal(t, info.GetName(), "john")
-	addr := info.GetPubKey().Address()
+	addr := info.GetAddress()
 	john, err := kb.Key("john")
 	require.NoError(t, err)
 	require.Equal(t, john.GetName(), "john")
-	require.Equal(t, john.GetPubKey().Address(), addr)
+	require.Equal(t, john.GetAddress(), addr)
 
 	// Export the public key only
 	armor, err := kb.ExportPubKeyArmor("john")
@@ -336,7 +336,7 @@ func TestSeedPhraseKeyRing(t *testing.T) {
 	newInfo, err := kb.NewAccount(n2, mnemonic, DefaultBIP39Passphrase, hdPath, hd.Secp256k1)
 	require.NoError(t, err)
 	require.Equal(t, n2, newInfo.GetName())
-	require.Equal(t, info.GetPubKey().Address(), newInfo.GetPubKey().Address())
+	require.Equal(t, info.GetAddress(), newInfo.GetAddress())
 	require.Equal(t, info.GetPubKey(), newInfo.GetPubKey())
 }
 
@@ -572,7 +572,7 @@ func TestInMemoryExportImport(t *testing.T) {
 	john, err := cstore.Key("john")
 	require.NoError(t, err)
 	require.Equal(t, info.GetName(), "john")
-	johnAddr := info.GetPubKey().Address()
+	johnAddr := info.GetAddress()
 
 	armor, err := cstore.ExportPubKeyArmor("john")
 	require.NoError(t, err)
@@ -585,7 +585,7 @@ func TestInMemoryExportImport(t *testing.T) {
 	john2, err := cstore.Key("john2")
 	require.NoError(t, err)
 
-	require.Equal(t, john.GetPubKey().Address(), johnAddr)
+	require.Equal(t, john.GetAddress(), johnAddr)
 	require.Equal(t, john.GetName(), "john")
 	require.Equal(t, john.GetAddress(), john2.GetAddress())
 	require.Equal(t, john.GetAlgo(), john2.GetAlgo())
@@ -627,11 +627,11 @@ func TestInMemoryExportImportPubKey(t *testing.T) {
 	require.Nil(t, err)
 	require.NotEqual(t, info, "")
 	require.Equal(t, info.GetName(), "john")
-	addr := info.GetPubKey().Address()
+	addr := info.GetAddress()
 	john, err := cstore.Key("john")
 	require.NoError(t, err)
 	require.Equal(t, john.GetName(), "john")
-	require.Equal(t, john.GetPubKey().Address(), addr)
+	require.Equal(t, john.GetAddress(), addr)
 
 	// Export the public key only
 	armor, err := cstore.ExportPubKeyArmor("john")
@@ -714,7 +714,7 @@ func TestInMemorySeedPhrase(t *testing.T) {
 	newInfo, err := cstore.NewAccount(n2, mnemonic, DefaultBIP39Passphrase, hdPath, algo)
 	require.NoError(t, err)
 	require.Equal(t, n2, newInfo.GetName())
-	require.Equal(t, info.GetPubKey().Address(), newInfo.GetPubKey().Address())
+	require.Equal(t, info.GetAddress(), newInfo.GetAddress())
 	require.Equal(t, info.GetPubKey(), newInfo.GetPubKey())
 }
 

@@ -394,12 +394,7 @@ func (ks keystore) DeleteByAddress(address sdk.Address) error {
 }
 
 func (ks keystore) Delete(uid string) error {
-	info, err := ks.Key(uid)
-	if err != nil {
-		return err
-	}
-
-	err = ks.db.Remove(addrHexKeyAsString(info.GetAddress()))
+	_, err := ks.Key(uid)
 	if err != nil {
 		return err
 	}
@@ -417,8 +412,13 @@ func (ks keystore) ChangeAddress(uid string, address sdk.AccAddress) error {
 	if err != nil {
 		return err
 	}
-	info = info.WithAddress(address)
 
+	err = ks.Delete(info.GetName())
+	if err != nil {
+		return err
+	}
+
+	info = info.WithAddress(address)
 	err = ks.writeInfo(info)
 	if err != nil {
 		return err
@@ -743,24 +743,10 @@ func (ks keystore) writeInfo(info Info) error {
 		return err
 	}
 
-	err = ks.db.Set(keyring.Item{
-		Key:  addrHexKeyAsString(info.GetAddress()),
-		Data: key,
-	})
-	if err != nil {
-		return err
-	}
-
 	return nil
 }
 
 func (ks keystore) existsInDb(info Info) (bool, error) {
-	if _, err := ks.db.Get(addrHexKeyAsString(info.GetAddress())); err == nil {
-		return true, nil // address lookup succeeds - info exists
-	} else if err != keyring.ErrKeyNotFound {
-		return false, err // received unexpected error - returns error
-	}
-
 	if _, err := ks.db.Get(string(infoKey(info.GetName()))); err == nil {
 		return true, nil // uid lookup succeeds - info exists
 	} else if err != keyring.ErrKeyNotFound {
