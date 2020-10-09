@@ -76,12 +76,6 @@ func TestKeyManagementKeyRing(t *testing.T) {
 	require.NoError(t, err)
 	_, err = kb.Key(n3)
 	require.NotNil(t, err)
-	_, err = kb.KeyByAddress(accAddr(i2))
-	require.NoError(t, err)
-	addr, err := sdk.AccAddressFromBech32("cosmos1yq8lgssgxlx9smjhes6ryjasmqmd3ts2559g0t")
-	require.NoError(t, err)
-	_, err = kb.KeyByAddress(addr)
-	require.NotNil(t, err)
 
 	// list shows them in order
 	keyS, err := kb.List()
@@ -428,12 +422,6 @@ func TestInMemoryKeyManagement(t *testing.T) {
 	i2, err := cstore.Key(n2)
 	require.NoError(t, err)
 	_, err = cstore.Key(n3)
-	require.NotNil(t, err)
-	_, err = cstore.KeyByAddress(accAddr(i2))
-	require.NoError(t, err)
-	addr, err := sdk.AccAddressFromBech32("cosmos1yq8lgssgxlx9smjhes6ryjasmqmd3ts2559g0t")
-	require.NoError(t, err)
-	_, err = cstore.KeyByAddress(addr)
 	require.NotNil(t, err)
 
 	// list shows them in order
@@ -859,19 +847,6 @@ func TestAltKeyring_Get(t *testing.T) {
 	requireEqualInfo(t, mnemonic, key)
 }
 
-func TestAltKeyring_KeyByAddress(t *testing.T) {
-	keyring, err := New(t.Name(), BackendTest, t.TempDir(), nil)
-	require.NoError(t, err)
-
-	uid := someKey
-	mnemonic, _, err := keyring.NewMnemonic(uid, English, sdk.FullFundraiserPath, hd.Secp256k1)
-	require.NoError(t, err)
-
-	key, err := keyring.KeyByAddress(mnemonic.GetAddress())
-	require.NoError(t, err)
-	requireEqualInfo(t, key, mnemonic)
-}
-
 func TestAltKeyring_Delete(t *testing.T) {
 	keyring, err := New(t.Name(), BackendTest, t.TempDir(), nil)
 	require.NoError(t, err)
@@ -885,26 +860,6 @@ func TestAltKeyring_Delete(t *testing.T) {
 	require.Len(t, list, 1)
 
 	err = keyring.Delete(uid)
-	require.NoError(t, err)
-
-	list, err = keyring.List()
-	require.NoError(t, err)
-	require.Empty(t, list)
-}
-
-func TestAltKeyring_DeleteByAddress(t *testing.T) {
-	keyring, err := New(t.Name(), BackendTest, t.TempDir(), nil)
-	require.NoError(t, err)
-
-	uid := someKey
-	mnemonic, _, err := keyring.NewMnemonic(uid, English, sdk.FullFundraiserPath, hd.Secp256k1)
-	require.NoError(t, err)
-
-	list, err := keyring.List()
-	require.NoError(t, err)
-	require.Len(t, list, 1)
-
-	err = keyring.DeleteByAddress(mnemonic.GetAddress())
 	require.NoError(t, err)
 
 	list, err = keyring.List()
@@ -979,22 +934,6 @@ func TestAltKeyring_Sign(t *testing.T) {
 	require.True(t, key.VerifySignature(msg, sign))
 }
 
-func TestAltKeyring_SignByAddress(t *testing.T) {
-	keyring, err := New(t.Name(), BackendTest, t.TempDir(), nil)
-	require.NoError(t, err)
-
-	uid := "jack"
-	mnemonic, _, err := keyring.NewMnemonic(uid, English, sdk.FullFundraiserPath, hd.Secp256k1)
-	require.NoError(t, err)
-
-	msg := []byte("some message")
-
-	sign, key, err := keyring.SignByAddress(mnemonic.GetAddress(), msg)
-	require.NoError(t, err)
-
-	require.True(t, key.VerifySignature(msg, sign))
-}
-
 func TestAltKeyring_ImportExportPrivKey(t *testing.T) {
 	keyring, err := New(t.Name(), BackendTest, t.TempDir(), nil)
 	require.NoError(t, err)
@@ -1008,33 +947,6 @@ func TestAltKeyring_ImportExportPrivKey(t *testing.T) {
 	require.NoError(t, err)
 	err = keyring.Delete(uid)
 	require.NoError(t, err)
-	newUID := otherID
-	// Should fail importing with wrong password
-	err = keyring.ImportPrivKey(newUID, armor, "wrongPass")
-	require.EqualError(t, err, "failed to decrypt private key: ciphertext decryption failed")
-
-	err = keyring.ImportPrivKey(newUID, armor, passphrase)
-	require.NoError(t, err)
-
-	// Should fail importing private key on existing key.
-	err = keyring.ImportPrivKey(newUID, armor, passphrase)
-	require.EqualError(t, err, fmt.Sprintf("cannot overwrite key: %s", newUID))
-}
-
-func TestAltKeyring_ImportExportPrivKey_ByAddress(t *testing.T) {
-	keyring, err := New(t.Name(), BackendTest, t.TempDir(), nil)
-	require.NoError(t, err)
-
-	uid := theID
-	mnemonic, _, err := keyring.NewMnemonic(uid, English, sdk.FullFundraiserPath, hd.Secp256k1)
-	require.NoError(t, err)
-
-	passphrase := "somePass"
-	armor, err := keyring.ExportPrivKeyArmorByAddress(mnemonic.GetAddress(), passphrase)
-	require.NoError(t, err)
-	err = keyring.Delete(uid)
-	require.NoError(t, err)
-
 	newUID := otherID
 	// Should fail importing with wrong password
 	err = keyring.ImportPrivKey(newUID, armor, "wrongPass")
@@ -1069,29 +981,6 @@ func TestAltKeyring_ImportExportPubKey(t *testing.T) {
 	err = keyring.ImportPubKey(newUID, armor)
 	require.EqualError(t, err, fmt.Sprintf("cannot overwrite key: %s", newUID))
 }
-
-func TestAltKeyring_ImportExportPubKey_ByAddress(t *testing.T) {
-	keyring, err := New(t.Name(), BackendTest, t.TempDir(), nil)
-	require.NoError(t, err)
-
-	uid := theID
-	mnemonic, _, err := keyring.NewMnemonic(uid, English, sdk.FullFundraiserPath, hd.Secp256k1)
-	require.NoError(t, err)
-
-	armor, err := keyring.ExportPubKeyArmorByAddress(mnemonic.GetAddress())
-	require.NoError(t, err)
-	err = keyring.Delete(uid)
-	require.NoError(t, err)
-
-	newUID := otherID
-	err = keyring.ImportPubKey(newUID, armor)
-	require.NoError(t, err)
-
-	// Should fail importing private key on existing key.
-	err = keyring.ImportPubKey(newUID, armor)
-	require.EqualError(t, err, fmt.Sprintf("cannot overwrite key: %s", newUID))
-}
-
 func TestAltKeyring_ConstructorSupportedAlgos(t *testing.T) {
 	keyring, err := New(t.Name(), BackendTest, t.TempDir(), nil)
 	require.NoError(t, err)

@@ -148,18 +148,7 @@ func runShowCmd(cmd *cobra.Command, args []string) (err error) {
 
 func fetchKey(kb keyring.Keyring, keyref string) (keyring.Info, error) {
 	info, err := kb.Key(keyref)
-	if err != nil {
-		accAddr, err := sdk.AccAddressFromBech32(keyref)
-		if err != nil {
-			return info, err
-		}
-
-		info, err = kb.KeyByAddress(accAddr)
-		if err != nil {
-			return info, errors.New("key not found")
-		}
-	}
-	return info, nil
+	return info, err
 }
 
 func validateMultisigThreshold(k, nKeys int) error {

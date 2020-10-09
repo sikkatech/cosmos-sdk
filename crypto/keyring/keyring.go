@@ -55,13 +55,11 @@ type Keyring interface {
 	// Supported signing algorithms for Keyring and Ledger respectively.
 	SupportedAlgorithms() (SigningAlgoList, SigningAlgoList)
 
-	// Key and KeyByAddress return keys by uid and address respectively.
+	// Key return keys by uid and address respectively.
 	Key(uid string) (Info, error)
-	KeyByAddress(address sdk.Address) (Info, error)
 
-	// Delete and DeleteByAddress remove keys from the keyring.
+	// Delete remove keys from the keyring.
 	Delete(uid string) error
-	DeleteByAddress(address sdk.Address) error
 
 	// ChangeAddress change address of a keyring
 	ChangeAddress(uid string, address sdk.AccAddress) error
@@ -94,9 +92,6 @@ type Keyring interface {
 type Signer interface {
 	// Sign sign byte messages with a user key.
 	Sign(uid string, msg []byte) ([]byte, tmcrypto.PubKey, error)
-
-	// SignByAddress sign byte messages with a user key providing the address.
-	SignByAddress(address sdk.Address, msg []byte) ([]byte, tmcrypto.PubKey, error)
 }
 
 // Importer is implemented by key stores that support import of public and private keys.
@@ -111,11 +106,9 @@ type Importer interface {
 type Exporter interface {
 	// Export public key
 	ExportPubKeyArmor(uid string) (string, error)
-	ExportPubKeyArmorByAddress(address sdk.Address) (string, error)
 	// ExportPrivKey returns a private key in ASCII armored format.
 	// It returns an error if the key does not exist or a wrong encryption passphrase is supplied.
 	ExportPrivKeyArmor(uid, encryptPassphrase string) (armor string, err error)
-	ExportPrivKeyArmorByAddress(address sdk.Address, encryptPassphrase string) (armor string, err error)
 }
 
 // Option overrides keyring configuration options.
@@ -203,15 +196,6 @@ func (ks keystore) ExportPubKeyArmor(uid string) (string, error) {
 	return crypto.ArmorPubKeyBytes(CryptoCdc.MustMarshalBinaryBare(bz.GetPubKey()), string(bz.GetAlgo())), nil
 }
 
-func (ks keystore) ExportPubKeyArmorByAddress(address sdk.Address) (string, error) {
-	info, err := ks.KeyByAddress(address)
-	if err != nil {
-		return "", err
-	}
-
-	return ks.ExportPubKeyArmor(info.GetName())
-}
-
 func (ks keystore) ExportPrivKeyArmor(uid, encryptPassphrase string) (armor string, err error) {
 	priv, err := ks.ExportPrivateKeyObject(uid)
 	if err != nil {
@@ -252,15 +236,6 @@ func (ks keystore) ExportPrivateKeyObject(uid string) (tmcrypto.PrivKey, error) 
 	}
 
 	return priv, nil
-}
-
-func (ks keystore) ExportPrivKeyArmorByAddress(address sdk.Address, encryptPassphrase string) (armor string, err error) {
-	byAddress, err := ks.KeyByAddress(address)
-	if err != nil {
-		return "", err
-	}
-
-	return ks.ExportPrivKeyArmor(byAddress.GetName(), encryptPassphrase)
 }
 
 func (ks keystore) ImportPrivKey(uid, armor, passphrase string) error {
@@ -338,15 +313,6 @@ func (ks keystore) Sign(uid string, msg []byte) ([]byte, tmcrypto.PubKey, error)
 	return sig, priv.PubKey(), nil
 }
 
-func (ks keystore) SignByAddress(address sdk.Address, msg []byte) ([]byte, tmcrypto.PubKey, error) {
-	key, err := ks.KeyByAddress(address)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	return ks.Sign(key.GetName(), msg)
-}
-
 func (ks keystore) SaveLedgerKey(uid string, algo SignatureAlgo, hrp string, coinType, account, index uint32) (Info, error) {
 	if !ks.options.SupportedAlgosLedger.Contains(algo) {
 		return nil, ErrUnsupportedSigningAlgo
@@ -377,20 +343,6 @@ func (ks keystore) SaveMultisig(uid string, pubkey tmcrypto.PubKey) (Info, error
 
 func (ks keystore) SavePubKey(uid string, pubkey tmcrypto.PubKey, algo hd.PubKeyType) (Info, error) {
 	return ks.writeOfflineKey(uid, pubkey, algo)
-}
-
-func (ks keystore) DeleteByAddress(address sdk.Address) error {
-	info, err := ks.KeyByAddress(address)
-	if err != nil {
-		return err
-	}
-
-	err = ks.Delete(info.GetName())
-	if err != nil {
-		return err
-	}
-
-	return nil
 }
 
 func (ks keystore) Delete(uid string) error {
@@ -425,24 +377,6 @@ func (ks keystore) ChangeAddress(uid string, address sdk.AccAddress) error {
 	}
 
 	return nil
-}
-
-func (ks keystore) KeyByAddress(address sdk.Address) (Info, error) {
-	ik, err := ks.db.Get(addrHexKeyAsString(address))
-	if err != nil {
-		return nil, err
-	}
-
-	if len(ik.Data) == 0 {
-		return nil, fmt.Errorf("key with address %s not found", address)
-	}
-
-	bs, err := ks.db.Get(string(ik.Data))
-	if err != nil {
-		return nil, err
-	}
-
-	return unmarshalInfo(bs.Data)
 }
 
 func (ks keystore) List() ([]Info, error) {
