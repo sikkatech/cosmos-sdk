@@ -3,6 +3,7 @@ package types
 import (
 	"fmt"
 	"math"
+	"runtime/debug"
 )
 
 // Gas consumption descriptors.
@@ -81,6 +82,8 @@ func addUint64Overflow(a, b uint64) (uint64, bool) {
 }
 
 func (g *basicGasMeter) ConsumeGas(amount Gas, descriptor string) {
+	fmt.Println("myDebug.ConsumeGas", descriptor, amount)
+	debug.PrintStack()
 	var overflow bool
 	// TODO: Should we set the consumed field after overflow checking?
 	g.consumed, overflow = addUint64Overflow(g.consumed, amount)
@@ -130,6 +133,8 @@ func (g *infiniteGasMeter) Limit() Gas {
 }
 
 func (g *infiniteGasMeter) ConsumeGas(amount Gas, descriptor string) {
+	fmt.Println("myDebug.ConsumeGas", descriptor, amount)
+	debug.PrintStack()
 	var overflow bool
 	// TODO: Should we set the consumed field after overflow checking?
 	g.consumed, overflow = addUint64Overflow(g.consumed, amount)
