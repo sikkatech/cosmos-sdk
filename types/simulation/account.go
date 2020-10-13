@@ -43,6 +43,7 @@ func RandomAccounts(r *rand.Rand, n int) []Account {
 
 		accs[i].PrivKey = secp256k1.GenPrivKeyFromSecret(privkeySeed)
 		accs[i].PubKey = accs[i].PrivKey.PubKey()
+		// TODO here's something wrong, address <=> pubkey matching
 		accs[i].Address = sdk.AccAddress(accs[i].PubKey.Address())
 
 		accs[i].ConsKey = ed25519.GenPrivKeyFromSecret(privkeySeed)
