@@ -8,18 +8,17 @@ import (
 	"github.com/cosmos/cosmos-sdk/client/flags"
 	"github.com/cosmos/cosmos-sdk/client/input"
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
-	"github.com/cosmos/cosmos-sdk/types"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// ChangeAddressCommand defines a keys command to add a generated or recovered private key to keybase.
-func ChangeAddressCommand() *cobra.Command {
+// ChangePubKeyCommand defines a keys command to add a generated or recovered private key to keybase.
+func ChangePubKeyCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "change-address <name> <target_address>",
-		Short: "Set an address of an account and save to disk",
-		Long:  `Set an address of an account and save to disk`,
+		Use:   "change-pubkey <name> <target_pubkey>",
+		Short: "Set a pubkey of an account and save to disk",
+		Long:  `Set a pubkey of an account and save to disk`,
 		Args:  cobra.ExactArgs(2),
-		RunE:  runChangeAddressCmd,
+		RunE:  runChangePubKeyCmd,
 	}
 
 	cmd.Flags().BoolP(flagYes, "y", false, "Skip confirmation prompt when updating offline or ledger key references")
@@ -31,7 +30,7 @@ func ChangeAddressCommand() *cobra.Command {
 	return cmd
 }
 
-func runChangeAddressCmd(cmd *cobra.Command, args []string) error {
+func runChangePubKeyCmd(cmd *cobra.Command, args []string) error {
 	buf := bufio.NewReader(cmd.InOrStdin())
 
 	backend, _ := cmd.Flags().GetString(flags.FlagKeyringBackend)
@@ -42,7 +41,7 @@ func runChangeAddressCmd(cmd *cobra.Command, args []string) error {
 	}
 
 	name := args[0]
-	address, err := types.AccAddressFromBech32(args[1])
+	address, err := sdk.GetPubKeyFromBech32(sdk.Bech32PubKeyTypeAccPub, args[1])
 	if err != nil {
 		return err
 	}
@@ -61,7 +60,7 @@ func runChangeAddressCmd(cmd *cobra.Command, args []string) error {
 		}
 	}
 
-	if err := kb.ChangeAddress(name, address); err != nil {
+	if err := kb.ChangePubKey(name, address); err != nil {
 		return err
 	}
 
