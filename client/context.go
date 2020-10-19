@@ -291,9 +291,17 @@ func GetFromFields(kr keyring.Keyring, from string, genOnly bool) (sdk.AccAddres
 		return addr, "", nil
 	}
 
-	info, err := kr.Key(from)
-	if err != nil {
-		return nil, "", err
+	var info keyring.Info
+	if addr, err := sdk.AccAddressFromBech32(from); err == nil {
+		info, err = kr.KeyByAddress(addr)
+		if err != nil {
+			return nil, "", err
+		}
+	} else {
+		info, err = kr.Key(from)
+		if err != nil {
+			return nil, "", err
+		}
 	}
 
 	return info.GetAddress(), info.GetName(), nil
