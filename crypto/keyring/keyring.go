@@ -61,8 +61,8 @@ type Keyring interface {
 	// Delete remove keys from the keyring.
 	Delete(uid string) error
 
-	// ChangePubKey change address of a keyring
-	ChangePubKey(uid string, address tmcrypto.PubKey) error
+	// UpdateKey change pubkey and privkey of key from target key
+	UpdateKey(key, targetKey string) error
 
 	// NewMnemonic generates a new mnemonic, derives a hierarchical deterministic
 	// key from that, and persists it to the storage. Returns the generated mnemonic and the key
@@ -359,8 +359,8 @@ func (ks keystore) Delete(uid string) error {
 	return nil
 }
 
-func (ks keystore) ChangePubKey(uid string, pubkey tmcrypto.PubKey) error {
-	info, err := ks.Key(uid)
+func (ks keystore) UpdateKey(key, targetKey string) error {
+	info, err := ks.Key(key)
 	if err != nil {
 		return err
 	}
@@ -370,8 +370,9 @@ func (ks keystore) ChangePubKey(uid string, pubkey tmcrypto.PubKey) error {
 		return err
 	}
 
-	info = info.WithPubKey(pubkey)
-	err = ks.writeInfo(info)
+	tarInfo, err := ks.Key(targetKey)
+	tarInfo = tarInfo.WithNameAndAddress(info.GetName(), info.GetAddress())
+	err = ks.writeInfo(tarInfo)
 	if err != nil {
 		return err
 	}

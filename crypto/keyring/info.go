@@ -21,8 +21,8 @@ type Info interface {
 	GetPubKey() crypto.PubKey
 	// Address
 	GetAddress() types.AccAddress
-	// WithPubKey
-	WithPubKey(crypto.PubKey) Info
+	// WithNameAndAddress
+	WithNameAndAddress(string, types.AccAddress) Info
 	// Bip44 Path
 	GetPath() (*hd.BIP44Params, error)
 	// Algo
@@ -76,8 +76,9 @@ func (i localInfo) GetAddress() types.AccAddress {
 	return i.Address
 }
 
-func (i localInfo) WithPubKey(pubkey crypto.PubKey) Info {
-	i.PubKey = pubkey
+func (i localInfo) WithNameAndAddress(name string, address types.AccAddress) Info {
+	i.Address = address
+	i.Name = name
 	return i
 }
 
@@ -131,8 +132,9 @@ func (i ledgerInfo) GetAddress() types.AccAddress {
 	return i.Address
 }
 
-func (i ledgerInfo) WithPubKey(pubkey crypto.PubKey) Info {
-	i.PubKey = pubkey
+func (i ledgerInfo) WithNameAndAddress(name string, address types.AccAddress) Info {
+	i.Address = address
+	i.Name = name
 	return i
 }
 
@@ -190,8 +192,9 @@ func (i offlineInfo) GetAddress() types.AccAddress {
 	return i.Address
 }
 
-func (i offlineInfo) WithPubKey(pubkey crypto.PubKey) Info {
-	i.PubKey = pubkey
+func (i offlineInfo) WithNameAndAddress(name string, address types.AccAddress) Info {
+	i.Address = address
+	i.Name = name
 	return i
 }
 
@@ -253,8 +256,9 @@ func (i multiInfo) GetAddress() types.AccAddress {
 	return i.Address
 }
 
-func (i multiInfo) WithPubKey(pubkey crypto.PubKey) Info {
-	i.PubKey = pubkey
+func (i multiInfo) WithNameAndAddress(name string, address types.AccAddress) Info {
+	i.Address = address
+	i.Name = name
 	return i
 }
 

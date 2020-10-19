@@ -48,7 +48,7 @@ The pass backend requires GnuPG: https://gnupg.org/
 		DeleteKeyCommand(),
 		ParseKeyStringCommand(),
 		MigrateCommand(),
-		ChangePubKeyCommand(),
+		UpdateKeyCommand(),
 	)
 
 	cmd.PersistentFlags().String(flags.FlagHome, defaultNodeHome, "The application home directory")

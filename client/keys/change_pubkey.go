@@ -11,14 +11,14 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// ChangePubKeyCommand defines a keys command to add a generated or recovered private key to keybase.
-func ChangePubKeyCommand() *cobra.Command {
+// UpdateKeyCommand defines a keys command to add a generated or recovered private key to keybase.
+func UpdateKeyCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "change-pubkey <name> <target_pubkey>",
-		Short: "Set a pubkey of an account and save to disk",
-		Long:  `Set a pubkey of an account and save to disk`,
+		Use:   "update-key <key> <target_key>",
+		Short: "Set public key and private key of an account and save to disk",
+		Long:  `Set public key and private key of an account and save to disk`,
 		Args:  cobra.ExactArgs(2),
-		RunE:  runChangePubKeyCmd,
+		RunE:  runUpdateKeyCmd,
 	}
 
 	cmd.Flags().BoolP(flagYes, "y", false, "Skip confirmation prompt when updating offline or ledger key references")
@@ -30,7 +30,7 @@ func ChangePubKeyCommand() *cobra.Command {
 	return cmd
 }
 
-func runChangePubKeyCmd(cmd *cobra.Command, args []string) error {
+func runUpdateKeyCmd(cmd *cobra.Command, args []string) error {
 	buf := bufio.NewReader(cmd.InOrStdin())
 
 	backend, _ := cmd.Flags().GetString(flags.FlagKeyringBackend)
@@ -40,32 +40,32 @@ func runChangePubKeyCmd(cmd *cobra.Command, args []string) error {
 		return err
 	}
 
-	name := args[0]
-	address, err := sdk.GetPubKeyFromBech32(sdk.Bech32PubKeyTypeAccPub, args[1])
+	key := args[0]
+	tarKey := args[1]
 	if err != nil {
 		return err
 	}
 
-	info, err := kb.Key(name)
+	info, err := kb.Key(key)
 	if err != nil {
 		return err
 	}
 
 	// confirm change, unless -y is passed
 	if skip, _ := cmd.Flags().GetBool(flagYes); !skip {
-		if yes, err := input.GetConfirmation("Key address will be updated. Continue?", buf, cmd.ErrOrStderr()); err != nil {
+		if yes, err := input.GetConfirmation("Key will be updated. Continue?", buf, cmd.ErrOrStderr()); err != nil {
 			return err
 		} else if !yes {
 			return nil
 		}
 	}
 
-	if err := kb.ChangePubKey(name, address); err != nil {
+	if err := kb.UpdateKey(key, tarKey); err != nil {
 		return err
 	}
 
 	if info.GetType() == keyring.TypeLedger || info.GetType() == keyring.TypeOffline {
-		cmd.PrintErrln("Key address updated")
+		cmd.PrintErrln("Key updated")
 	}
 
 	return nil
