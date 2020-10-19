@@ -394,7 +394,12 @@ func (ks keystore) DeleteByAddress(address sdk.Address) error {
 }
 
 func (ks keystore) Delete(uid string) error {
-	_, err := ks.Key(uid)
+	info, err := ks.Key(uid)
+	if err != nil {
+		return err
+	}
+
+	err = ks.db.Remove(addrHexKeyAsString(info.GetAddress()))
 	if err != nil {
 		return err
 	}

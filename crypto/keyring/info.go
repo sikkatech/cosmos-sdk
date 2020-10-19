@@ -73,6 +73,9 @@ func (i localInfo) GetPubKey() crypto.PubKey {
 
 // GetType implements Info interface
 func (i localInfo) GetAddress() types.AccAddress {
+	if i.Address.Empty() {
+		return i.GetPubKey().Address().Bytes()
+	}
 	return i.Address
 }
 
@@ -129,6 +132,9 @@ func (i ledgerInfo) GetPubKey() crypto.PubKey {
 
 // GetAddress implements Info interface
 func (i ledgerInfo) GetAddress() types.AccAddress {
+	if i.Address.Empty() {
+		return i.GetPubKey().Address().Bytes()
+	}
 	return i.Address
 }
 
@@ -189,6 +195,9 @@ func (i offlineInfo) GetAlgo() hd.PubKeyType {
 
 // GetAddress implements Info interface
 func (i offlineInfo) GetAddress() types.AccAddress {
+	if i.Address.Empty() {
+		return i.GetPubKey().Address().Bytes()
+	}
 	return i.Address
 }
 
@@ -253,6 +262,9 @@ func (i multiInfo) GetPubKey() crypto.PubKey {
 
 // GetAddress implements Info interface
 func (i multiInfo) GetAddress() types.AccAddress {
+	if i.Address.Empty() {
+		return i.GetPubKey().Address().Bytes()
+	}
 	return i.Address
 }
 
