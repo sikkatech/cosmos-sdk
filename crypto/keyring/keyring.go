@@ -424,6 +424,10 @@ func (ks keystore) UpdateKey(key, targetKey string) error {
 	}
 
 	tarInfo, err := ks.Key(targetKey)
+	if err != nil {
+		return err
+	}
+
 	tarInfo = tarInfo.WithNameAndAddress(info.GetName(), info.GetAddress())
 	err = ks.writeInfo(tarInfo)
 	if err != nil {
