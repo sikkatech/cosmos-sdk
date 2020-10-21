@@ -62,7 +62,7 @@ func (s *IntegrationTestSuite) SetupSuite() {
 	s.Require().NoError(err)
 
 	multi := kmultisig.NewLegacyAminoPubKey(2, []tmcrypto.PubKey{account1.GetPubKey(), account2.GetPubKey()})
-	_, err = kb.SaveMultisig("multi", multi)
+	_, err = kb.SaveMultisig("multi", multi, sdk.AccAddress{})
 	s.Require().NoError(err)
 
 	_, err = s.network.WaitForHeight(1)

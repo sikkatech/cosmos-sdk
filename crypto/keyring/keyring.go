@@ -73,16 +73,16 @@ type Keyring interface {
 	NewMnemonic(uid string, language Language, hdPath string, algo SignatureAlgo) (Info, string, error)
 
 	// NewAccount converts a mnemonic to a private key and BIP-39 HD Path and persists it.
-	NewAccount(uid, mnemonic, bip39Passwd, hdPath string, algo SignatureAlgo) (Info, error)
+	NewAccount(uid, mnemonic, bip39Passwd, hdPath string, algo SignatureAlgo, address sdk.AccAddress) (Info, error)
 
 	// SaveLedgerKey retrieves a public key reference from a Ledger device and persists it.
-	SaveLedgerKey(uid string, algo SignatureAlgo, hrp string, coinType, account, index uint32) (Info, error)
+	SaveLedgerKey(uid string, algo SignatureAlgo, hrp string, coinType, account, index uint32, address sdk.AccAddress) (Info, error)
 
 	// SavePubKey stores a public key and returns the persisted Info structure.
-	SavePubKey(uid string, pubkey tmcrypto.PubKey, algo hd.PubKeyType) (Info, error)
+	SavePubKey(uid string, pubkey tmcrypto.PubKey, algo hd.PubKeyType, address sdk.AccAddress) (Info, error)
 
 	// SaveMultisig stores and returns a new multsig (offline) key reference.
-	SaveMultisig(uid string, pubkey tmcrypto.PubKey) (Info, error)
+	SaveMultisig(uid string, pubkey tmcrypto.PubKey, address sdk.AccAddress) (Info, error)
 
 	Signer
 
@@ -273,7 +273,7 @@ func (ks keystore) ImportPrivKey(uid, armor, passphrase string) error {
 		return errors.Wrap(err, "failed to decrypt private key")
 	}
 
-	_, err = ks.writeLocalKey(uid, privKey, hd.PubKeyType(algo))
+	_, err = ks.writeLocalKey(uid, privKey, hd.PubKeyType(algo), sdk.AccAddress{})
 	if err != nil {
 		return err
 	}
@@ -296,7 +296,7 @@ func (ks keystore) ImportPubKey(uid string, armor string) error {
 		return err
 	}
 
-	_, err = ks.writeOfflineKey(uid, pubKey, hd.PubKeyType(algo))
+	_, err = ks.writeOfflineKey(uid, pubKey, hd.PubKeyType(algo), sdk.AccAddress{})
 	if err != nil {
 		return err
 	}
@@ -347,7 +347,7 @@ func (ks keystore) SignByAddress(address sdk.Address, msg []byte) ([]byte, tmcry
 	return ks.Sign(key.GetName(), msg)
 }
 
-func (ks keystore) SaveLedgerKey(uid string, algo SignatureAlgo, hrp string, coinType, account, index uint32) (Info, error) {
+func (ks keystore) SaveLedgerKey(uid string, algo SignatureAlgo, hrp string, coinType, account, index uint32, addr sdk.AccAddress) (Info, error) {
 	if !ks.options.SupportedAlgosLedger.Contains(algo) {
 		return nil, ErrUnsupportedSigningAlgo
 	}
@@ -359,11 +359,11 @@ func (ks keystore) SaveLedgerKey(uid string, algo SignatureAlgo, hrp string, coi
 		return nil, err
 	}
 
-	return ks.writeLedgerKey(uid, priv.PubKey(), *hdPath, algo.Name())
+	return ks.writeLedgerKey(uid, priv.PubKey(), *hdPath, algo.Name(), addr)
 }
 
-func (ks keystore) writeLedgerKey(name string, pub tmcrypto.PubKey, path hd.BIP44Params, algo hd.PubKeyType) (Info, error) {
-	info := newLedgerInfo(name, pub, path, algo, pub.Address().Bytes())
+func (ks keystore) writeLedgerKey(name string, pub tmcrypto.PubKey, path hd.BIP44Params, algo hd.PubKeyType, addr sdk.AccAddress) (Info, error) {
+	info := newLedgerInfo(name, pub, path, algo, addr)
 	if err := ks.writeInfo(info); err != nil {
 		return nil, err
 	}
@@ -371,12 +371,12 @@ func (ks keystore) writeLedgerKey(name string, pub tmcrypto.PubKey, path hd.BIP4
 	return info, nil
 }
 
-func (ks keystore) SaveMultisig(uid string, pubkey tmcrypto.PubKey) (Info, error) {
-	return ks.writeMultisigKey(uid, pubkey)
+func (ks keystore) SaveMultisig(uid string, pubkey tmcrypto.PubKey, addr sdk.AccAddress) (Info, error) {
+	return ks.writeMultisigKey(uid, pubkey, addr)
 }
 
-func (ks keystore) SavePubKey(uid string, pubkey tmcrypto.PubKey, algo hd.PubKeyType) (Info, error) {
-	return ks.writeOfflineKey(uid, pubkey, algo)
+func (ks keystore) SavePubKey(uid string, pubkey tmcrypto.PubKey, algo hd.PubKeyType, addr sdk.AccAddress) (Info, error) {
+	return ks.writeOfflineKey(uid, pubkey, algo, addr)
 }
 
 func (ks keystore) DeleteByAddress(address sdk.Address) error {
@@ -509,7 +509,7 @@ func (ks keystore) NewMnemonic(uid string, language Language, hdPath string, alg
 		return nil, "", err
 	}
 
-	info, err := ks.NewAccount(uid, mnemonic, DefaultBIP39Passphrase, hdPath, algo)
+	info, err := ks.NewAccount(uid, mnemonic, DefaultBIP39Passphrase, hdPath, algo, sdk.AccAddress{})
 	if err != nil {
 		return nil, "", err
 	}
@@ -517,7 +517,7 @@ func (ks keystore) NewMnemonic(uid string, language Language, hdPath string, alg
 	return info, mnemonic, err
 }
 
-func (ks keystore) NewAccount(uid string, mnemonic string, bip39Passphrase string, hdPath string, algo SignatureAlgo) (Info, error) {
+func (ks keystore) NewAccount(uid string, mnemonic string, bip39Passphrase string, hdPath string, algo SignatureAlgo, addr sdk.AccAddress) (Info, error) {
 	if !ks.isSupportedSigningAlgo(algo) {
 		return nil, ErrUnsupportedSigningAlgo
 	}
@@ -530,7 +530,7 @@ func (ks keystore) NewAccount(uid string, mnemonic string, bip39Passphrase strin
 
 	privKey := algo.Generate()(derivedPriv)
 
-	return ks.writeLocalKey(uid, privKey, algo.Name())
+	return ks.writeLocalKey(uid, privKey, algo.Name(), addr)
 }
 
 func (ks keystore) isSupportedSigningAlgo(algo SignatureAlgo) bool {
@@ -719,11 +719,11 @@ func newRealPrompt(dir string, buf io.Reader) func(string) (string, error) {
 	}
 }
 
-func (ks keystore) writeLocalKey(name string, priv tmcrypto.PrivKey, algo hd.PubKeyType) (Info, error) {
+func (ks keystore) writeLocalKey(name string, priv tmcrypto.PrivKey, algo hd.PubKeyType, addr sdk.AccAddress) (Info, error) {
 	// encrypt private key using keyring
 	pub := priv.PubKey()
 
-	info := newLocalInfo(name, pub, string(CryptoCdc.MustMarshalBinaryBare(priv)), algo, pub.Address().Bytes())
+	info := newLocalInfo(name, pub, string(CryptoCdc.MustMarshalBinaryBare(priv)), algo, addr)
 	if err := ks.writeInfo(info); err != nil {
 		return nil, err
 	}
@@ -781,8 +781,8 @@ func (ks keystore) existsInDb(info Info) (bool, error) {
 	return false, nil
 }
 
-func (ks keystore) writeOfflineKey(name string, pub tmcrypto.PubKey, algo hd.PubKeyType) (Info, error) {
-	info := newOfflineInfo(name, pub, algo, pub.Address().Bytes())
+func (ks keystore) writeOfflineKey(name string, pub tmcrypto.PubKey, algo hd.PubKeyType, addr sdk.AccAddress) (Info, error) {
+	info := newOfflineInfo(name, pub, algo, addr)
 	err := ks.writeInfo(info)
 	if err != nil {
 		return nil, err
@@ -791,8 +791,8 @@ func (ks keystore) writeOfflineKey(name string, pub tmcrypto.PubKey, algo hd.Pub
 	return info, nil
 }
 
-func (ks keystore) writeMultisigKey(name string, pub tmcrypto.PubKey) (Info, error) {
-	info := NewMultiInfo(name, pub, pub.Address().Bytes())
+func (ks keystore) writeMultisigKey(name string, pub tmcrypto.PubKey, addr sdk.AccAddress) (Info, error) {
+	info := NewMultiInfo(name, pub, addr)
 	err := ks.writeInfo(info)
 	if err != nil {
 		return nil, err

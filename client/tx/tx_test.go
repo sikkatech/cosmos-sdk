@@ -131,7 +131,7 @@ func TestSign(t *testing.T) {
 	require.NoError(t, err)
 	require.NoError(t, kr.Delete(from))
 
-	info, err := kr.NewAccount(from, seed, "", path, hd.Secp256k1)
+	info, err := kr.NewAccount(from, seed, "", path, hd.Secp256k1, sdk.AccAddress{})
 	require.NoError(t, err)
 
 	txf := tx.Factory{}.

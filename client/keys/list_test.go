@@ -31,7 +31,7 @@ func Test_runListCmd(t *testing.T) {
 	ctx := context.WithValue(context.Background(), client.ClientContextKey, &clientCtx)
 
 	path := "" //sdk.GetConfig().GetFullFundraiserPath()
-	_, err = kb.NewAccount("something", testutil.TestMnemonic, "", path, hd.Secp256k1)
+	_, err = kb.NewAccount("something", testutil.TestMnemonic, "", path, hd.Secp256k1, sdk.AccAddress{})
 	require.NoError(t, err)
 
 	t.Cleanup(func() {

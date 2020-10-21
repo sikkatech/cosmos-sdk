@@ -31,6 +31,7 @@ const (
 	flagMultisig    = "multisig"
 	flagNoSort      = "nosort"
 	flagHDPath      = "hd-path"
+	flagAddress     = "address"
 
 	// DefaultKeyPass contains the default key password for genesis transactions
 	DefaultKeyPass = "12345678"
@@ -57,6 +58,8 @@ You can add a multisig key by passing the list of key names you want the public
 key to be composed of to the --multisig flag and the minimum number of signatures
 required through --multisig-threshold. The keys are sorted by address, unless
 the flag --nosort is set.
+
+Use the --address flag to use different one when you want to register an account with unmatching public key and address.
 `,
 		Args: cobra.ExactArgs(1),
 		RunE: runAddCmd,
@@ -76,6 +79,7 @@ the flag --nosort is set.
 	cmd.Flags().Uint32(flagAccount, 0, "Account number for HD derivation")
 	cmd.Flags().Uint32(flagIndex, 0, "Address index number for HD derivation")
 	cmd.Flags().String(flags.FlagKeyAlgorithm, string(hd.Secp256k1Type), "Key signing algorithm to generate keys for")
+	cmd.Flags().String(flagAddress, "", "Parse an address in bech32 format and save it to disk")
 
 	cmd.SetOut(cmd.OutOrStdout())
 	cmd.SetErr(cmd.ErrOrStderr())
@@ -118,6 +122,7 @@ output
 */
 func RunAddCmd(cmd *cobra.Command, args []string, kb keyring.Keyring, inBuf *bufio.Reader) error {
 	var err error
+	var addr sdk.AccAddress
 
 	name := args[0]
 	interactive, _ := cmd.Flags().GetBool(flagInteractive)
@@ -126,6 +131,15 @@ func RunAddCmd(cmd *cobra.Command, args []string, kb keyring.Keyring, inBuf *buf
 
 	keyringAlgos, _ := kb.SupportedAlgorithms()
 	algoStr, _ := cmd.Flags().GetString(flags.FlagKeyAlgorithm)
+
+	address, _ := cmd.Flags().GetString(flagAddress)
+	if address != "" {
+		addr, err = sdk.AccAddressFromBech32(address)
+		if err != nil {
+			return err
+		}
+	}
+
 	algo, err := keyring.NewSigningAlgoFromString(algoStr, keyringAlgos)
 	if err != nil {
 		return err
@@ -175,7 +189,7 @@ func RunAddCmd(cmd *cobra.Command, args []string, kb keyring.Keyring, inBuf *buf
 			}
 
 			pk := multisig.NewLegacyAminoPubKey(multisigThreshold, pks)
-			if _, err := kb.SaveMultisig(name, pk); err != nil {
+			if _, err := kb.SaveMultisig(name, pk, addr); err != nil {
 				return err
 			}
 
@@ -191,7 +205,7 @@ func RunAddCmd(cmd *cobra.Command, args []string, kb keyring.Keyring, inBuf *buf
 			return err
 		}
 
-		if _, err := kb.SavePubKey(name, pk, algo.Name()); err != nil {
+		if _, err := kb.SavePubKey(name, pk, algo.Name(), addr); err != nil {
 			return err
 		}
 
@@ -213,7 +227,7 @@ func RunAddCmd(cmd *cobra.Command, args []string, kb keyring.Keyring, inBuf *buf
 	// If we're using ledger, only thing we need is the path and the bech32 prefix.
 	if useLedger {
 		bech32PrefixAccAddr := sdk.GetConfig().GetBech32AccountAddrPrefix()
-		info, err := kb.SaveLedgerKey(name, hd.Secp256k1, bech32PrefixAccAddr, coinType, account, index)
+		info, err := kb.SaveLedgerKey(name, hd.Secp256k1, bech32PrefixAccAddr, coinType, account, index, addr)
 
 		if err != nil {
 			return err
@@ -281,7 +295,7 @@ func RunAddCmd(cmd *cobra.Command, args []string, kb keyring.Keyring, inBuf *buf
 		}
 	}
 
-	info, err := kb.NewAccount(name, mnemonic, bip39Passphrase, hdPath, algo)
+	info, err := kb.NewAccount(name, mnemonic, bip39Passphrase, hdPath, algo, addr)
 	if err != nil {
 		return err
 	}

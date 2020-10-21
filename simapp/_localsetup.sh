@@ -84,3 +84,22 @@ simd start --home=$HOME/.simd
 # # simd tx bank send validator $(simd keys show -a user1 --keyring-backend=file --home=$HOME/.simd) 1000stake  --keyring-backend=file --home=$HOME/.simd --chain-id=testing
 # # simd query bank balances $(simd keys show -a validator --keyring-backend=file --home=$HOME/.simd) --home=$HOME/.simd
 # # simd query bank balances $(simd keys show -a user1 --keyring-backend=file --home=$HOME/.simd) --home=$HOME/.simd
+
+################ adding new address with --address and --recover phase for unmatching address and pubkey pair
+
+# simd keys add new_account1 --keyring-backend=test --home=$HOME/.simd
+# simd keys delete new_account1 --keyring-backend=test --home=$HOME/.simd
+# simd keys add fansy_account1 --address cosmos1ttn9n4zjswcss8y4amn5xzmu4g4w47yg5jcq3z --keyring-backend=test --home=$HOME/.simd
+# simd keys delete fansy_account1 --keyring-backend=test --home=$HOME/.simd
+
+# export VAL2_MNEMONIC="bone trip tent ball solar voyage uphold maid nation airport plug panic clump track neither mercy trigger sick panther diary lyrics episode sudden rifle"
+# simd keys add val2 --keyring-backend=test --home=$HOME/.simd --recover <<< $VAL2_MNEMONIC
+# simd tx changepubkey change-pubkey $(simd keys show -p val2 --keyring-backend=test --home=$HOME/.simd) --from validator --keyring-backend=test --chain-id=testing --home=$HOME/.simd <<< y
+# simd keys delete val2 --keyring-backend=test --home=$HOME/.simd  <<< y
+# export VALIDATOR_ADDR=$(simd keys show -a validator --keyring-backend=test --home=$HOME/.simd)
+# simd keys delete validator --keyring-backend=test --home=$HOME/.simd  <<< y
+# simd keys add validator --address=$VALIDATOR_ADDR --keyring-backend=test --home=$HOME/.simd --recover <<< $VAL2_MNEMONIC
+# simd keys add user1 --keyring-backend=test --home=$HOME/.simd
+# simd tx bank send validator $(simd keys show -a user1 --keyring-backend=test --home=$HOME/.simd) 1000stake  --keyring-backend=test --home=$HOME/.simd --chain-id=testing <<< y
+# simd query bank balances $(simd keys show -a validator --keyring-backend=test --home=$HOME/.simd) --home=$HOME/.simd
+# simd query bank balances $(simd keys show -a user1 --keyring-backend=test --home=$HOME/.simd) --home=$HOME/.simd

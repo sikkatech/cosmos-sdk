@@ -16,7 +16,7 @@ import (
 func TestInMemoryCreateLedger(t *testing.T) {
 	kb := NewInMemory()
 
-	ledger, err := kb.SaveLedgerKey("some_account", hd.Secp256k1, "cosmos", 118, 3, 1)
+	ledger, err := kb.SaveLedgerKey("some_account", hd.Secp256k1, "cosmos", 118, 3, 1, sdk.AccAddress{})
 
 	if err != nil {
 		require.Error(t, err)
@@ -56,7 +56,7 @@ func TestSignVerifyKeyRingWithLedger(t *testing.T) {
 	kb, err := New("keybasename", "test", dir, nil)
 	require.NoError(t, err)
 
-	i1, err := kb.SaveLedgerKey("key", hd.Secp256k1, "cosmos", 118, 0, 0)
+	i1, err := kb.SaveLedgerKey("key", hd.Secp256k1, "cosmos", 118, 0, 0, sdk.AccAddress{})
 	if err != nil {
 		require.Equal(t, "ledger nano S: support for ledger devices is not available in this executable", err.Error())
 		t.Skip("ledger nano S: support for ledger devices is not available in this executable")
@@ -94,10 +94,10 @@ func TestAltKeyring_SaveLedgerKey(t *testing.T) {
 	require.NoError(t, err)
 
 	// Test unsupported Algo
-	_, err = keyring.SaveLedgerKey("key", notSupportedAlgo{}, "cosmos", 118, 0, 0)
+	_, err = keyring.SaveLedgerKey("key", notSupportedAlgo{}, "cosmos", 118, 0, 0, sdk.AccAddress{})
 	require.EqualError(t, err, ErrUnsupportedSigningAlgo.Error())
 
-	ledger, err := keyring.SaveLedgerKey("some_account", hd.Secp256k1, "cosmos", 118, 3, 1)
+	ledger, err := keyring.SaveLedgerKey("some_account", hd.Secp256k1, "cosmos", 118, 3, 1, sdk.AccAddress{})
 	if err != nil {
 		require.Equal(t, "ledger nano S: support for ledger devices is not available in this executable", err.Error())
 		t.Skip("ledger nano S: support for ledger devices is not available in this executable")
