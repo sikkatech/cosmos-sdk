@@ -126,3 +126,11 @@ simd start --home=$HOME/.simd
 # simd keys add val2 --keyring-backend=test --home=$HOME/.simd --recover <<< $VAL2_MNEMONIC
 # simd keys update-key val2 validator --keyring-backend=test --home=$HOME/.simd  <<< y
 # simd keys add val5 --keyring-backend=test --home=$HOME/.simd --recover <<< $VAL2_MNEMONIC
+
+# Even though wallet does not change address permanently, using —from-address, one-time transaction send should be working
+# simd keys add val2 --keyring-backend=test --home=$HOME/.simd
+# simd tx changepubkey change-pubkey $(simd keys show -p val2 --keyring-backend=test --home=$HOME/.simd) --from validator --keyring-backend=test --chain-id=testing --home=$HOME/.simd <<< y
+# simd keys add user1 --keyring-backend=test --home=$HOME/.simd
+# simd tx bank send val2 $(simd keys show -a user1 --keyring-backend=test --home=$HOME/.simd) 1000stake --from-address=$(simd keys show -a validator --keyring-backend=test --home=$HOME/.simd)  --keyring-backend=test --home=$HOME/.simd --chain-id=testing <<< y
+# simd query bank balances $(simd keys show -a validator --keyring-backend=test --home=$HOME/.simd) --home=$HOME/.simd
+# simd query bank balances $(simd keys show -a user1 --keyring-backend=test --home=$HOME/.simd) --home=$HOME/.simd
