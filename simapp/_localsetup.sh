@@ -134,3 +134,10 @@ simd start --home=$HOME/.simd
 # simd tx bank send val2 $(simd keys show -a user1 --keyring-backend=test --home=$HOME/.simd) 1000stake --from-address=$(simd keys show -a validator --keyring-backend=test --home=$HOME/.simd)  --keyring-backend=test --home=$HOME/.simd --chain-id=testing <<< y
 # simd query bank balances $(simd keys show -a validator --keyring-backend=test --home=$HOME/.simd) --home=$HOME/.simd
 # simd query bank balances $(simd keys show -a user1 --keyring-backend=test --home=$HOME/.simd) --home=$HOME/.simd
+
+# tx sign with --from-address
+# simd tx bank send $(simd keys show -a validator --keyring-backend=test --home=$HOME/.simd) $(simd keys show -a user1 --keyring-backend=test --home=$HOME/.simd) 1000stake --keyring-backend=test --home=$HOME/.simd --chain-id=testing --generate-only > my_tx.json
+# simd tx sign my_tx.json --from=val2 --from-address=$(simd keys show -a validator --keyring-backend=test --home=$HOME/.simd) --keyring-backend=test --home=$HOME/.simd --chain-id=testing > signed_my_tx.json
+# simd tx broadcast signed_my_tx.json
+# simd query bank balances $(simd keys show -a validator --keyring-backend=test --home=$HOME/.simd) --home=$HOME/.simd
+# rm signed_my_tx.json my_tx.json

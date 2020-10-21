@@ -47,11 +47,11 @@ func PrintUnsignedStdTx(txBldr tx.Factory, clientCtx client.Context, msgs []sdk.
 // is false, it replaces the signatures already attached with the new signature.
 // Don't perform online validation or lookups if offline is true.
 func SignTx(txFactory tx.Factory, clientCtx client.Context, name string, stdTx client.TxBuilder, offline bool) error {
-	info, err := txFactory.Keybase().Key(name)
+	_, err := txFactory.Keybase().Key(name)
 	if err != nil {
 		return err
 	}
-	addr := info.GetAddress()
+	addr := clientCtx.GetFromAddress()
 	if !isTxSigner(addr, stdTx.GetTx().GetSigners()) {
 		return fmt.Errorf("%s: %s", sdkerrors.ErrorInvalidSigner, name)
 	}
