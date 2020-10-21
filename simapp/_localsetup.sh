@@ -120,3 +120,9 @@ simd start --home=$HOME/.simd
 
 # sending from an address identifier (single key with the address)
 # simd tx bank send $(simd keys show -a user1 --keyring-backend=test --home=$HOME/.simd) $(simd keys show -a validator --keyring-backend=test --home=$HOME/.simd) 1000stake  --keyring-backend=test --home=$HOME/.simd --chain-id=testing <<< y
+
+# After updating the public key of the account, can still make a new entry with the original pubkey, creating the same address again
+# export VAL2_MNEMONIC="bone trip tent ball solar voyage uphold maid nation airport plug panic clump track neither mercy trigger sick panther diary lyrics episode sudden rifle"
+# simd keys add val2 --keyring-backend=test --home=$HOME/.simd --recover <<< $VAL2_MNEMONIC
+# simd keys update-key val2 validator --keyring-backend=test --home=$HOME/.simd  <<< y
+# simd keys add val5 --keyring-backend=test --home=$HOME/.simd --recover <<< $VAL2_MNEMONIC
