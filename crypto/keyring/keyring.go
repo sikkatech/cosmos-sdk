@@ -2,6 +2,7 @@ package keyring
 
 import (
 	"bufio"
+	"bytes"
 	"encoding/hex"
 	"fmt"
 	"io"
@@ -394,15 +395,16 @@ func (ks keystore) DeleteByAddress(address sdk.Address) error {
 }
 
 func (ks keystore) Delete(uid string) error {
-	info, err := ks.Key(uid)
+	_, err := ks.Key(uid)
 	if err != nil {
 		return err
 	}
 
-	err = ks.db.Remove(addrHexKeyAsString(info.GetAddress()))
-	if err != nil {
-		return err
-	}
+	// TODO should think of using this db as an array of associated keys instead of not using forever
+	// err = ks.db.Remove(addrHexKeyAsString(info.GetAddress()))
+	// if err != nil {
+	// 	return err
+	// }
 
 	err = ks.db.Remove(string(infoKey(uid)))
 	if err != nil {
@@ -438,21 +440,46 @@ func (ks keystore) UpdateKey(key, targetKey string) error {
 }
 
 func (ks keystore) KeyByAddress(address sdk.Address) (Info, error) {
-	ik, err := ks.db.Get(addrHexKeyAsString(address))
+	// TODO should think of using this db as an array of associated keys instead of not using forever
+	// ik, err := ks.db.Get(addrHexKeyAsString(address))
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	// if len(ik.Data) == 0 {
+	// 	return nil, fmt.Errorf("key with address %s not found", address)
+	// }
+
+	// bs, err := ks.db.Get(string(ik.Data))
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	// return unmarshalInfo(bs.Data)
+
+	keys, err := ks.List()
 	if err != nil {
 		return nil, err
 	}
 
-	if len(ik.Data) == 0 {
-		return nil, fmt.Errorf("key with address %s not found", address)
+	flagExist := false
+	var keyByAddress Info
+
+	for _, key := range keys {
+		if bytes.Equal(key.GetAddress(), address.Bytes()) {
+			if flagExist {
+				return nil, fmt.Errorf("multiple keys exist with address %s", address)
+			}
+			flagExist = true
+			keyByAddress = key
+		}
 	}
 
-	bs, err := ks.db.Get(string(ik.Data))
-	if err != nil {
-		return nil, err
+	if flagExist {
+		return keyByAddress, nil
 	}
 
-	return unmarshalInfo(bs.Data)
+	return nil, fmt.Errorf("key with address %s not found", address)
 }
 
 func (ks keystore) List() ([]Info, error) {
@@ -753,22 +780,37 @@ func (ks keystore) writeInfo(info Info) error {
 		return err
 	}
 
-	err = ks.db.Set(keyring.Item{
-		Key:  addrHexKeyAsString(info.GetAddress()),
-		Data: key,
-	})
-	if err != nil {
-		return err
-	}
+	// TODO should think of using this db as an array of associated keys instead of not using forever
+	// err = ks.db.Set(keyring.Item{
+	// 	Key:  addrHexKeyAsString(info.GetAddress()),
+	// 	Data: key,
+	// })
+	// if err != nil {
+	// 	return err
+	// }
 
 	return nil
 }
 
 func (ks keystore) existsInDb(info Info) (bool, error) {
-	if _, err := ks.db.Get(addrHexKeyAsString(info.GetAddress())); err == nil {
-		return true, nil // address lookup succeeds - info exists
-	} else if err != keyring.ErrKeyNotFound {
-		return false, err // received unexpected error - returns error
+	// TODO should think of using this db as an array of associated keys instead of not using forever
+	// if _, err := ks.db.Get(addrHexKeyAsString(info.GetAddress())); err == nil {
+	// 	return true, nil // address lookup succeeds - info exists
+	// } else if err != keyring.ErrKeyNotFound {
+	// 	return false, err // received unexpected error - returns error
+	// }
+
+	// If both pubkey and address are same, should return true
+	keys, err := ks.List()
+	if err != nil {
+		return false, err
+	}
+
+	for _, key := range keys {
+		if bytes.Equal(key.GetAddress(), info.GetAddress()) &&
+			bytes.Equal(key.GetPubKey().Bytes(), info.GetPubKey().Bytes()) {
+			return true, nil
+		}
 	}
 
 	if _, err := ks.db.Get(string(infoKey(info.GetName()))); err == nil {

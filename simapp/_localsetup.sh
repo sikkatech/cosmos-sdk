@@ -103,3 +103,17 @@ simd start --home=$HOME/.simd
 # simd tx bank send validator $(simd keys show -a user1 --keyring-backend=test --home=$HOME/.simd) 1000stake  --keyring-backend=test --home=$HOME/.simd --chain-id=testing <<< y
 # simd query bank balances $(simd keys show -a validator --keyring-backend=test --home=$HOME/.simd) --home=$HOME/.simd
 # simd query bank balances $(simd keys show -a user1 --keyring-backend=test --home=$HOME/.simd) --home=$HOME/.simd
+
+################ adding new address with --address and --recover phase v2 (modify address as an identifier)
+
+# export VAL2_MNEMONIC="bone trip tent ball solar voyage uphold maid nation airport plug panic clump track neither mercy trigger sick panther diary lyrics episode sudden rifle"
+# simd keys add val2 --keyring-backend=test --home=$HOME/.simd --recover <<< $VAL2_MNEMONIC
+# simd tx changepubkey change-pubkey $(simd keys show -p val2 --keyring-backend=test --home=$HOME/.simd) --from validator --keyring-backend=test --chain-id=testing --home=$HOME/.simd <<< y
+# simd keys add new_validator --address=$VALIDATOR_ADDR --keyring-backend=test --home=$HOME/.simd --recover <<< $VAL2_MNEMONIC
+# simd keys add user1 --keyring-backend=test --home=$HOME/.simd
+# simd tx bank send new_validator $(simd keys show -a user1 --keyring-backend=test --home=$HOME/.simd) 1000stake  --keyring-backend=test --home=$HOME/.simd --chain-id=testing <<< y
+# simd query bank balances $(simd keys show -a validator --keyring-backend=test --home=$HOME/.simd) --home=$HOME/.simd
+# simd query bank balances $(simd keys show -a user1 --keyring-backend=test --home=$HOME/.simd) --home=$HOME/.simd
+
+# multiple keys with same address check
+# simd tx bank send $(simd keys show -a new_validator --keyring-backend=test --home=$HOME/.simd) $(simd keys show -a user1 --keyring-backend=test --home=$HOME/.simd) 1000stake  --keyring-backend=test --home=$HOME/.simd --chain-id=testing <<< y
