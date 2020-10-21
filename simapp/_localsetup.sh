@@ -117,3 +117,6 @@ simd start --home=$HOME/.simd
 
 # multiple keys with same address check
 # simd tx bank send $(simd keys show -a new_validator --keyring-backend=test --home=$HOME/.simd) $(simd keys show -a user1 --keyring-backend=test --home=$HOME/.simd) 1000stake  --keyring-backend=test --home=$HOME/.simd --chain-id=testing <<< y
+
+# sending from an address identifier (single key with the address)
+# simd tx bank send $(simd keys show -a user1 --keyring-backend=test --home=$HOME/.simd) $(simd keys show -a validator --keyring-backend=test --home=$HOME/.simd) 1000stake  --keyring-backend=test --home=$HOME/.simd --chain-id=testing <<< y
