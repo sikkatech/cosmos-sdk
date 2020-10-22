@@ -141,3 +141,38 @@ simd start --home=$HOME/.simd
 # simd tx broadcast signed_my_tx.json
 # simd query bank balances $(simd keys show -a validator --keyring-backend=test --home=$HOME/.simd) --home=$HOME/.simd
 # rm signed_my_tx.json my_tx.json
+
+# multi-signature transaction test
+# simd keys add user1 --keyring-backend=test --home=$HOME/.simd
+# simd keys add multi_val_user1 --multisig-threshold=2 --multisig=validator,user1 --keyring-backend=test --home=$HOME/.simd
+# simd keys show -a multi_val_user1 --keyring-backend=test --home=$HOME/.simd
+# simd keys show multi_val_user1 --output json --keyring-backend=test --home=$HOME/.simd
+
+# simd tx bank send validator $(simd keys show -a multi_val_user1 --keyring-backend=test --home=$HOME/.simd) 10000stake --keyring-backend=test --home=$HOME/.simd --chain-id=testing <<< y
+# simd keys add user2 --keyring-backend=test --home=$HOME/.simd
+# simd tx bank send $(simd keys show -a multi_val_user1 --keyring-backend=test --home=$HOME/.simd) $(simd keys show -a user2 --keyring-backend=test --home=$HOME/.simd) 1000stake --keyring-backend=test --home=$HOME/.simd --chain-id=testing --generate-only > my_tx.json
+# simd tx sign my_tx.json --multisig=$(simd keys show -a multi_val_user1 --keyring-backend=test --home=$HOME/.simd) --from=validator --keyring-backend=test --home=$HOME/.simd --chain-id=testing > validator_my_tx_signature.json
+# simd tx sign my_tx.json --multisig=$(simd keys show -a multi_val_user1 --keyring-backend=test --home=$HOME/.simd) --from=user1 --keyring-backend=test --home=$HOME/.simd --chain-id=testing > user1_my_tx_signature.json
+# simd tx multisign my_tx.json multi_val_user1 validator_my_tx_signature.json user1_my_tx_signature.json --keyring-backend=test --home=$HOME/.simd --chain-id=testing > signed_my_tx.json
+# simd tx broadcast signed_my_tx.json
+# rm my_tx.json user1_my_tx_signature.json validator_my_tx_signature.json signed_my_tx.json
+
+# multi-signature transaction with changed pubkey
+# simd keys add val2 --keyring-backend=test --home=$HOME/.simd
+# simd keys add user1 --keyring-backend=test --home=$HOME/.simd
+# simd keys add user2 --keyring-backend=test --home=$HOME/.simd
+# simd tx changepubkey change-pubkey $(simd keys show -p val2 --keyring-backend=test --home=$HOME/.simd) --from validator --keyring-backend=test --chain-id=testing --home=$HOME/.simd <<< y
+# simd keys update-key validator val2 --keyring-backend=test --home=$HOME/.simd  <<< y
+# simd keys add multi_val_user1 --multisig-threshold=2 --multisig=validator,user1 --keyring-backend=test --home=$HOME/.simd
+
+# simd tx bank send validator $(simd keys show -a multi_val_user1 --keyring-backend=test --home=$HOME/.simd) 10000stake --keyring-backend=test --home=$HOME/.simd --chain-id=testing <<< y
+# simd tx bank send $(simd keys show -a multi_val_user1 --keyring-backend=test --home=$HOME/.simd) $(simd keys show -a user2 --keyring-backend=test --home=$HOME/.simd) 1000stake --keyring-backend=test --home=$HOME/.simd --chain-id=testing --generate-only > my_tx.json
+# simd tx sign my_tx.json --multisig=$(simd keys show -a multi_val_user1 --keyring-backend=test --home=$HOME/.simd) --from=validator --keyring-backend=test --home=$HOME/.simd --chain-id=testing > validator_my_tx_signature.json
+# simd tx sign my_tx.json --multisig=$(simd keys show -a multi_val_user1 --keyring-backend=test --home=$HOME/.simd) --from=user1 --keyring-backend=test --home=$HOME/.simd --chain-id=testing > user1_my_tx_signature.json
+# simd tx multisign my_tx.json multi_val_user1 validator_my_tx_signature.json user1_my_tx_signature.json --keyring-backend=test --home=$HOME/.simd --chain-id=testing > signed_my_tx.json
+# simd tx broadcast signed_my_tx.json
+# rm my_tx.json user1_my_tx_signature.json validator_my_tx_signature.json signed_my_tx.json
+# simd query bank balances $(simd keys show -a user2 --keyring-backend=test --home=$HOME/.simd) --home=$HOME/.simd
+
+# using --from-address as alternative to --multi-sig
+# simd tx sign my_tx.json --from=validator --from-address=$(simd keys show -a multi_val_user1 --keyring-backend=test --home=$HOME/.simd) --keyring-backend=test --home=$HOME/.simd --chain-id=testing
