@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/stretchr/testify/require"
-
 	"github.com/tendermint/tendermint/libs/cli"
 
 	"github.com/cosmos/cosmos-sdk/client"
@@ -83,9 +82,28 @@ func Test_runAddCmdBasic(t *testing.T) {
 
 	require.NoError(t, cmd.ExecuteContext(ctx))
 
-	// In recovery mode
+	// address flag set
 	cmd.SetArgs([]string{
 		"keyname6",
+		fmt.Sprintf("--%s=%s", flags.FlagHome, kbHome),
+		fmt.Sprintf("--%s=true", flags.FlagDryRun),
+		fmt.Sprintf("--%s=%s", flagAddress, "invalid_cosmos_address"),
+	})
+
+	require.Error(t, cmd.ExecuteContext(ctx))
+
+	cmd.SetArgs([]string{
+		"keyname7",
+		fmt.Sprintf("--%s=%s", flags.FlagHome, kbHome),
+		fmt.Sprintf("--%s=true", flags.FlagDryRun),
+		fmt.Sprintf("--%s=%s", flagAddress, "cosmos18ls2uvzhjcp4kfcdgk0vtcv846wgwj2v479ulf"),
+	})
+
+	require.NoError(t, cmd.ExecuteContext(ctx))
+
+	// In recovery mode
+	cmd.SetArgs([]string{
+		"keyname8",
 		fmt.Sprintf("--%s=true", flagRecover),
 	})
 
@@ -99,7 +117,7 @@ func Test_runAddCmdBasic(t *testing.T) {
 
 	// In interactive mode
 	cmd.SetArgs([]string{
-		"keyname7",
+		"keyname9",
 		"-i",
 		fmt.Sprintf("--%s=false", flagRecover),
 	})
