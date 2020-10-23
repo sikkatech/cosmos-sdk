@@ -59,6 +59,7 @@ type Keyring interface {
 	// Key and KeyByAddress return keys by uid and address respectively.
 	Key(uid string) (Info, error)
 	KeyByAddress(address sdk.Address) (Info, error)
+	KeysByAddress(address sdk.Address) ([]Info, error)
 
 	// Delete and DeleteByAddress remove keys from the keyring.
 	Delete(uid string) error
@@ -439,7 +440,7 @@ func (ks keystore) UpdateKey(key, targetKey string) error {
 	return nil
 }
 
-func (ks keystore) KeyByAddress(address sdk.Address) (Info, error) {
+func (ks keystore) KeysByAddress(address sdk.Address) ([]Info, error) {
 	// TODO should think of using this db as an array of associated keys instead of not using forever
 	// ik, err := ks.db.Get(addrHexKeyAsString(address))
 	// if err != nil {
@@ -462,24 +463,32 @@ func (ks keystore) KeyByAddress(address sdk.Address) (Info, error) {
 		return nil, err
 	}
 
-	flagExist := false
-	var keyByAddress Info
+	matchingKeys := []Info{}
 
 	for _, key := range keys {
 		if bytes.Equal(key.GetAddress(), address.Bytes()) {
-			if flagExist {
-				return nil, fmt.Errorf("multiple keys exist with address %s", address)
-			}
-			flagExist = true
-			keyByAddress = key
+			matchingKeys = append(matchingKeys, key)
 		}
 	}
 
-	if flagExist {
-		return keyByAddress, nil
+	return matchingKeys, nil
+}
+
+func (ks keystore) KeyByAddress(address sdk.Address) (Info, error) {
+	keys, err := ks.KeysByAddress(address)
+	if err != nil {
+		return nil, err
 	}
 
-	return nil, fmt.Errorf("key with address %s not found", address)
+	if len(keys) > 1 {
+		return nil, fmt.Errorf("multiple keys exist with address %s", address)
+	}
+
+	if len(keys) == 0 {
+		return nil, fmt.Errorf("key with address %s not found", address)
+	}
+
+	return keys[0], nil
 }
 
 func (ks keystore) List() ([]Info, error) {
