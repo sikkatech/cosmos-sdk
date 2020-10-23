@@ -30,6 +30,7 @@ func Test_runDeleteCmd(t *testing.T) {
 
 	fakeKeyName1 := "runDeleteCmd_Key1"
 	fakeKeyName2 := "runDeleteCmd_Key2"
+	fakeKeyName3 := "runDeleteCmd_Key3"
 
 	path := sdk.GetConfig().GetFullFundraiserPath()
 
@@ -40,6 +41,10 @@ func Test_runDeleteCmd(t *testing.T) {
 	require.NoError(t, err)
 
 	_, _, err = kb.NewMnemonic(fakeKeyName2, keyring.English, sdk.FullFundraiserPath, hd.Secp256k1)
+	require.NoError(t, err)
+
+	addr3 := sdk.AccAddress([]byte("any----------address"))
+	_, err = kb.NewAccount(fakeKeyName3, testutil.TestMnemonic, "", path, hd.Secp256k1, addr3)
 	require.NoError(t, err)
 
 	cmd.SetArgs([]string{"blah", fmt.Sprintf("--%s=%s", flags.FlagHome, kbHome)})
@@ -89,4 +94,15 @@ func Test_runDeleteCmd(t *testing.T) {
 
 	_, err = kb.Key(fakeKeyName2)
 	require.Error(t, err) // Key2 is gone
+
+	cmd.SetArgs([]string{
+		fakeKeyName3,
+		fmt.Sprintf("--%s=%s", flags.FlagHome, kbHome),
+		fmt.Sprintf("--%s=true", flagYes),
+		fmt.Sprintf("--%s=%s", flags.FlagKeyringBackend, keyring.BackendTest),
+	})
+	require.NoError(t, cmd.Execute())
+
+	_, err = kb.Key(fakeKeyName3)
+	require.Error(t, err) // Key3 is gone
 }
