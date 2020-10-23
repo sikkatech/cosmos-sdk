@@ -1,6 +1,7 @@
 package keyring
 
 import (
+	"bytes"
 	"fmt"
 	"strings"
 	"testing"
@@ -44,6 +45,11 @@ func TestNewKeyring(t *testing.T) {
 	info, _, err := kr.NewMnemonic("foo", English, sdk.FullFundraiserPath, hd.Secp256k1)
 	require.NoError(t, err)
 	require.Equal(t, "foo", info.GetName())
+
+	addr := sdk.AccAddress([]byte("any----------address"))
+	newInfo := info.WithNameAndAddress("bar", addr)
+	require.True(t, bytes.Equal(newInfo.GetAddress().Bytes(), addr.Bytes()))
+	require.Equal(t, "bar", newInfo.GetName())
 }
 
 func TestKeyManagementKeyRing(t *testing.T) {
