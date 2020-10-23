@@ -60,6 +60,7 @@ func Test_runShowCmd(t *testing.T) {
 
 	fakeKeyName1 := "runShowCmd_Key1"
 	fakeKeyName2 := "runShowCmd_Key2"
+	fakeKeyName3 := "runShowCmd_Key3"
 
 	t.Cleanup(func() {
 		kb.Delete("runShowCmd_Key1")
@@ -71,8 +72,19 @@ func Test_runShowCmd(t *testing.T) {
 	require.NoError(t, err)
 
 	path2 := hd.NewFundraiserParams(1, sdk.CoinType, 1).String()
-	_, err = kb.NewAccount(fakeKeyName2, testutil.TestMnemonic, "", path2, hd.Secp256k1, sdk.AccAddress{})
+	info2, err := kb.NewAccount(fakeKeyName2, testutil.TestMnemonic, "", path2, hd.Secp256k1, sdk.AccAddress{})
 	require.NoError(t, err)
+
+	path3 := hd.NewFundraiserParams(1, sdk.CoinType, 2).String()
+	_, err = kb.NewAccount(fakeKeyName3, testutil.TestMnemonic, "", path3, hd.Secp256k1, info2.GetAddress())
+	require.NoError(t, err)
+
+	cmd.SetArgs([]string{
+		fakeKeyName3,
+		fmt.Sprintf("--%s=%s", flags.FlagHome, kbHome),
+		fmt.Sprintf("--%s=%s", flags.FlagKeyringBackend, keyring.BackendTest),
+	})
+	require.NoError(t, cmd.ExecuteContext(ctx))
 
 	// Now try single key
 	cmd.SetArgs([]string{
