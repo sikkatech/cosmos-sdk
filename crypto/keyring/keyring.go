@@ -395,17 +395,37 @@ func (ks keystore) DeleteByAddress(address sdk.Address) error {
 	return nil
 }
 
+func findAndDeleteString(s []string, item string) []string {
+	index := 0
+	for _, i := range s {
+		if i != item {
+			s[index] = i
+			index++
+		}
+	}
+	return s[:index]
+}
+
 func (ks keystore) Delete(uid string) error {
-	_, err := ks.Key(uid)
+	info, err := ks.Key(uid)
 	if err != nil {
 		return err
 	}
 
-	// TODO should think of using this db as an array of associated keys instead of not using forever
-	// err = ks.db.Remove(addrHexKeyAsString(info.GetAddress()))
-	// if err != nil {
-	// 	return err
-	// }
+	keynames, err := ks.KeyNamesByAddress(info.GetAddress())
+	if err != nil {
+		return err
+	}
+
+	keynames = findAndDeleteString(keynames, uid)
+	if len(keynames) == 0 {
+		ks.db.Remove(addrHexKeyAsString(info.GetAddress()))
+	} else {
+		ks.db.Set(keyring.Item{
+			Key:  addrHexKeyAsString(info.GetAddress()),
+			Data: CryptoCdc.MustMarshalBinaryBare(keynames),
+		})
+	}
 
 	err = ks.db.Remove(string(infoKey(uid)))
 	if err != nil {
@@ -440,35 +460,35 @@ func (ks keystore) UpdateKey(key, targetKey string) error {
 	return nil
 }
 
+func (ks keystore) KeyNamesByAddress(address sdk.Address) ([]string, error) {
+	ik, err := ks.db.Get(addrHexKeyAsString(address))
+	if err != nil {
+		return []string{}, nil
+	}
+
+	if len(ik.Data) == 0 {
+		return []string{}, nil
+	}
+
+	keynames := []string{}
+	err = CryptoCdc.UnmarshalBinaryBare(ik.Data, &keynames)
+	return keynames, err
+}
+
 func (ks keystore) KeysByAddress(address sdk.Address) ([]Info, error) {
-	// TODO should think of using this db as an array of associated keys instead of not using forever
-	// ik, err := ks.db.Get(addrHexKeyAsString(address))
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	// if len(ik.Data) == 0 {
-	// 	return nil, fmt.Errorf("key with address %s not found", address)
-	// }
-
-	// bs, err := ks.db.Get(string(ik.Data))
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	// return unmarshalInfo(bs.Data)
-
-	keys, err := ks.List()
+	keynames, err := ks.KeyNamesByAddress(address)
 	if err != nil {
 		return nil, err
 	}
 
 	matchingKeys := []Info{}
 
-	for _, key := range keys {
-		if bytes.Equal(key.GetAddress(), address.Bytes()) {
-			matchingKeys = append(matchingKeys, key)
+	for _, keyname := range keynames {
+		key, err := ks.Key(keyname)
+		if err != nil {
+			return nil, err
 		}
+		matchingKeys = append(matchingKeys, key)
 	}
 
 	return matchingKeys, nil
@@ -789,35 +809,37 @@ func (ks keystore) writeInfo(info Info) error {
 		return err
 	}
 
-	// TODO should think of using this db as an array of associated keys instead of not using forever
-	// err = ks.db.Set(keyring.Item{
-	// 	Key:  addrHexKeyAsString(info.GetAddress()),
-	// 	Data: key,
-	// })
-	// if err != nil {
-	// 	return err
-	// }
+	keynames, err := ks.KeyNamesByAddress(info.GetAddress())
+	if err != nil {
+		return err
+	}
+
+	keynames = append(keynames, info.GetName())
+	keynamesBz, err := CryptoCdc.MarshalBinaryBare(keynames)
+	if err != nil {
+		return err
+	}
+
+	err = ks.db.Set(keyring.Item{
+		Key:  addrHexKeyAsString(info.GetAddress()),
+		Data: keynamesBz,
+	})
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
 
 func (ks keystore) existsInDb(info Info) (bool, error) {
-	// TODO should think of using this db as an array of associated keys instead of not using forever
-	// if _, err := ks.db.Get(addrHexKeyAsString(info.GetAddress())); err == nil {
-	// 	return true, nil // address lookup succeeds - info exists
-	// } else if err != keyring.ErrKeyNotFound {
-	// 	return false, err // received unexpected error - returns error
-	// }
-
-	// If both pubkey and address are same, should return true
-	keys, err := ks.List()
+	// If both pubkey and address are same, return true
+	keys, err := ks.KeysByAddress(info.GetAddress())
 	if err != nil {
 		return false, err
 	}
 
 	for _, key := range keys {
-		if bytes.Equal(key.GetAddress(), info.GetAddress()) &&
-			bytes.Equal(key.GetPubKey().Bytes(), info.GetPubKey().Bytes()) {
+		if bytes.Equal(key.GetPubKey().Bytes(), info.GetPubKey().Bytes()) {
 			return true, nil
 		}
 	}

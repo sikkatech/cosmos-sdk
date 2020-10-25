@@ -88,7 +88,6 @@ func Bech32KeyOutput(keyInfo Info) (KeyOutput, error) {
 		pubKeys := make([]multisigPubKeyOutput, len(mInfo.PubKeys))
 
 		for i, pk := range mInfo.PubKeys {
-			// TODO here's something wrong, address <=> pubkey matching
 			accAddr := sdk.AccAddress(pk.PubKey.Address().Bytes())
 
 			bechPubKey, err := sdk.Bech32ifyPubKey(sdk.Bech32PubKeyTypeAccPub, pk.PubKey)
