@@ -150,7 +150,7 @@ func fetchKey(kb keyring.Keyring, keyref string) (keyring.Info, error) {
 
 		info, err = kb.KeyByAddress(accAddr)
 		if err != nil {
-			return info, errors.New("key not found")
+			return info, err
 		}
 	}
 	return info, nil
