@@ -17,6 +17,14 @@ import (
 )
 
 func Test_runAddShowCmds(t *testing.T) {
+	///////////// scenario /////////////////////////////////////////////////////////////
+	// key1_address = key2_address
+	// key1_pubkey != key2_pubkey
+	// when user add only key1, he can query key1 both by name and address.
+	// when user add key2 also, he can only query by key name not by address.
+	// If he tries to query using address, he get "multiple keys exist with address"
+	///////////////////////////////////////////////////////////////////////////////////
+
 	addCmd := AddKeyCommand()
 	addCmd.Flags().AddFlagSet(Commands("home").PersistentFlags())
 
