@@ -213,6 +213,13 @@ func ReadTxCommandFlags(clientCtx Context, flagSet *pflag.FlagSet) (Context, err
 		if err != nil {
 			return clientCtx, err
 		}
+		fromAddrModifier, _ := flagSet.GetString(flags.FlagFromAddress)
+		if fromAddrModifier != "" {
+			fromAddr, err = sdk.AccAddressFromBech32(fromAddrModifier)
+			if err != nil {
+				return clientCtx, err
+			}
+		}
 
 		clientCtx = clientCtx.WithFrom(from).WithFromAddress(fromAddr).WithFromName(fromName)
 	}

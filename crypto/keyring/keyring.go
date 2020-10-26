@@ -2,6 +2,7 @@ package keyring
 
 import (
 	"bufio"
+	"bytes"
 	"encoding/hex"
 	"fmt"
 	"io"
@@ -58,10 +59,14 @@ type Keyring interface {
 	// Key and KeyByAddress return keys by uid and address respectively.
 	Key(uid string) (Info, error)
 	KeyByAddress(address sdk.Address) (Info, error)
+	KeysByAddress(address sdk.Address) ([]Info, error)
 
 	// Delete and DeleteByAddress remove keys from the keyring.
 	Delete(uid string) error
 	DeleteByAddress(address sdk.Address) error
+
+	// UpdateKey change pubkey and privkey of key from target key
+	UpdateKey(key, targetKey string) error
 
 	// NewMnemonic generates a new mnemonic, derives a hierarchical deterministic
 	// key from that, and persists it to the storage. Returns the generated mnemonic and the key
@@ -70,16 +75,16 @@ type Keyring interface {
 	NewMnemonic(uid string, language Language, hdPath string, algo SignatureAlgo) (Info, string, error)
 
 	// NewAccount converts a mnemonic to a private key and BIP-39 HD Path and persists it.
-	NewAccount(uid, mnemonic, bip39Passwd, hdPath string, algo SignatureAlgo) (Info, error)
+	NewAccount(uid, mnemonic, bip39Passwd, hdPath string, algo SignatureAlgo, address sdk.AccAddress) (Info, error)
 
 	// SaveLedgerKey retrieves a public key reference from a Ledger device and persists it.
-	SaveLedgerKey(uid string, algo SignatureAlgo, hrp string, coinType, account, index uint32) (Info, error)
+	SaveLedgerKey(uid string, algo SignatureAlgo, hrp string, coinType, account, index uint32, address sdk.AccAddress) (Info, error)
 
 	// SavePubKey stores a public key and returns the persisted Info structure.
-	SavePubKey(uid string, pubkey tmcrypto.PubKey, algo hd.PubKeyType) (Info, error)
+	SavePubKey(uid string, pubkey tmcrypto.PubKey, algo hd.PubKeyType, address sdk.AccAddress) (Info, error)
 
 	// SaveMultisig stores and returns a new multsig (offline) key reference.
-	SaveMultisig(uid string, pubkey tmcrypto.PubKey) (Info, error)
+	SaveMultisig(uid string, pubkey tmcrypto.PubKey, address sdk.AccAddress) (Info, error)
 
 	Signer
 
@@ -270,7 +275,7 @@ func (ks keystore) ImportPrivKey(uid, armor, passphrase string) error {
 		return errors.Wrap(err, "failed to decrypt private key")
 	}
 
-	_, err = ks.writeLocalKey(uid, privKey, hd.PubKeyType(algo))
+	_, err = ks.writeLocalKey(uid, privKey, hd.PubKeyType(algo), sdk.AccAddress{})
 	if err != nil {
 		return err
 	}
@@ -293,7 +298,7 @@ func (ks keystore) ImportPubKey(uid string, armor string) error {
 		return err
 	}
 
-	_, err = ks.writeOfflineKey(uid, pubKey, hd.PubKeyType(algo))
+	_, err = ks.writeOfflineKey(uid, pubKey, hd.PubKeyType(algo), sdk.AccAddress{})
 	if err != nil {
 		return err
 	}
@@ -344,7 +349,7 @@ func (ks keystore) SignByAddress(address sdk.Address, msg []byte) ([]byte, tmcry
 	return ks.Sign(key.GetName(), msg)
 }
 
-func (ks keystore) SaveLedgerKey(uid string, algo SignatureAlgo, hrp string, coinType, account, index uint32) (Info, error) {
+func (ks keystore) SaveLedgerKey(uid string, algo SignatureAlgo, hrp string, coinType, account, index uint32, addr sdk.AccAddress) (Info, error) {
 	if !ks.options.SupportedAlgosLedger.Contains(algo) {
 		return nil, ErrUnsupportedSigningAlgo
 	}
@@ -356,11 +361,11 @@ func (ks keystore) SaveLedgerKey(uid string, algo SignatureAlgo, hrp string, coi
 		return nil, err
 	}
 
-	return ks.writeLedgerKey(uid, priv.PubKey(), *hdPath, algo.Name())
+	return ks.writeLedgerKey(uid, priv.PubKey(), *hdPath, algo.Name(), addr)
 }
 
-func (ks keystore) writeLedgerKey(name string, pub tmcrypto.PubKey, path hd.BIP44Params, algo hd.PubKeyType) (Info, error) {
-	info := newLedgerInfo(name, pub, path, algo)
+func (ks keystore) writeLedgerKey(name string, pub tmcrypto.PubKey, path hd.BIP44Params, algo hd.PubKeyType, addr sdk.AccAddress) (Info, error) {
+	info := newLedgerInfo(name, pub, path, algo, addr)
 	if err := ks.writeInfo(info); err != nil {
 		return nil, err
 	}
@@ -368,12 +373,12 @@ func (ks keystore) writeLedgerKey(name string, pub tmcrypto.PubKey, path hd.BIP4
 	return info, nil
 }
 
-func (ks keystore) SaveMultisig(uid string, pubkey tmcrypto.PubKey) (Info, error) {
-	return ks.writeMultisigKey(uid, pubkey)
+func (ks keystore) SaveMultisig(uid string, pubkey tmcrypto.PubKey, addr sdk.AccAddress) (Info, error) {
+	return ks.writeMultisigKey(uid, pubkey, addr)
 }
 
-func (ks keystore) SavePubKey(uid string, pubkey tmcrypto.PubKey, algo hd.PubKeyType) (Info, error) {
-	return ks.writeOfflineKey(uid, pubkey, algo)
+func (ks keystore) SavePubKey(uid string, pubkey tmcrypto.PubKey, algo hd.PubKeyType, addr sdk.AccAddress) (Info, error) {
+	return ks.writeOfflineKey(uid, pubkey, algo, addr)
 }
 
 func (ks keystore) DeleteByAddress(address sdk.Address) error {
@@ -390,15 +395,36 @@ func (ks keystore) DeleteByAddress(address sdk.Address) error {
 	return nil
 }
 
+func findAndDeleteString(s []string, item string) []string {
+	index := 0
+	for _, i := range s {
+		if i != item {
+			s[index] = i
+			index++
+		}
+	}
+	return s[:index]
+}
+
 func (ks keystore) Delete(uid string) error {
 	info, err := ks.Key(uid)
 	if err != nil {
 		return err
 	}
 
-	err = ks.db.Remove(addrHexKeyAsString(info.GetAddress()))
+	keynames, err := ks.KeyNamesByAddress(info.GetAddress())
 	if err != nil {
 		return err
+	}
+
+	keynames = findAndDeleteString(keynames, uid)
+	if len(keynames) == 0 {
+		ks.db.Remove(addrHexKeyAsString(info.GetAddress()))
+	} else {
+		ks.db.Set(keyring.Item{
+			Key:  addrHexKeyAsString(info.GetAddress()),
+			Data: CryptoCdc.MustMarshalBinaryBare(keynames),
+		})
 	}
 
 	err = ks.db.Remove(string(infoKey(uid)))
@@ -409,22 +435,80 @@ func (ks keystore) Delete(uid string) error {
 	return nil
 }
 
-func (ks keystore) KeyByAddress(address sdk.Address) (Info, error) {
+func (ks keystore) UpdateKey(key, targetKey string) error {
+	info, err := ks.Key(key)
+	if err != nil {
+		return err
+	}
+
+	err = ks.Delete(info.GetName())
+	if err != nil {
+		return err
+	}
+
+	tarInfo, err := ks.Key(targetKey)
+	if err != nil {
+		return err
+	}
+
+	tarInfo = tarInfo.WithNameAndAddress(info.GetName(), info.GetAddress())
+	err = ks.writeInfo(tarInfo)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (ks keystore) KeyNamesByAddress(address sdk.Address) ([]string, error) {
 	ik, err := ks.db.Get(addrHexKeyAsString(address))
 	if err != nil {
-		return nil, err
+		return []string{}, nil
 	}
 
 	if len(ik.Data) == 0 {
-		return nil, fmt.Errorf("key with address %s not found", address)
+		return []string{}, nil
 	}
 
-	bs, err := ks.db.Get(string(ik.Data))
+	keynames := []string{}
+	err = CryptoCdc.UnmarshalBinaryBare(ik.Data, &keynames)
+	return keynames, err
+}
+
+func (ks keystore) KeysByAddress(address sdk.Address) ([]Info, error) {
+	keynames, err := ks.KeyNamesByAddress(address)
 	if err != nil {
 		return nil, err
 	}
 
-	return unmarshalInfo(bs.Data)
+	matchingKeys := []Info{}
+
+	for _, keyname := range keynames {
+		key, err := ks.Key(keyname)
+		if err != nil {
+			return nil, err
+		}
+		matchingKeys = append(matchingKeys, key)
+	}
+
+	return matchingKeys, nil
+}
+
+func (ks keystore) KeyByAddress(address sdk.Address) (Info, error) {
+	keys, err := ks.KeysByAddress(address)
+	if err != nil {
+		return nil, err
+	}
+
+	if len(keys) > 1 {
+		return nil, fmt.Errorf("multiple keys exist with address %s", address)
+	}
+
+	if len(keys) == 0 {
+		return nil, fmt.Errorf("key with address %s not found", address)
+	}
+
+	return keys[0], nil
 }
 
 func (ks keystore) List() ([]Info, error) {
@@ -481,7 +565,7 @@ func (ks keystore) NewMnemonic(uid string, language Language, hdPath string, alg
 		return nil, "", err
 	}
 
-	info, err := ks.NewAccount(uid, mnemonic, DefaultBIP39Passphrase, hdPath, algo)
+	info, err := ks.NewAccount(uid, mnemonic, DefaultBIP39Passphrase, hdPath, algo, sdk.AccAddress{})
 	if err != nil {
 		return nil, "", err
 	}
@@ -489,7 +573,7 @@ func (ks keystore) NewMnemonic(uid string, language Language, hdPath string, alg
 	return info, mnemonic, err
 }
 
-func (ks keystore) NewAccount(uid string, mnemonic string, bip39Passphrase string, hdPath string, algo SignatureAlgo) (Info, error) {
+func (ks keystore) NewAccount(uid string, mnemonic string, bip39Passphrase string, hdPath string, algo SignatureAlgo, addr sdk.AccAddress) (Info, error) {
 	if !ks.isSupportedSigningAlgo(algo) {
 		return nil, ErrUnsupportedSigningAlgo
 	}
@@ -502,7 +586,7 @@ func (ks keystore) NewAccount(uid string, mnemonic string, bip39Passphrase strin
 
 	privKey := algo.Generate()(derivedPriv)
 
-	return ks.writeLocalKey(uid, privKey, algo.Name())
+	return ks.writeLocalKey(uid, privKey, algo.Name(), addr)
 }
 
 func (ks keystore) isSupportedSigningAlgo(algo SignatureAlgo) bool {
@@ -691,11 +775,11 @@ func newRealPrompt(dir string, buf io.Reader) func(string) (string, error) {
 	}
 }
 
-func (ks keystore) writeLocalKey(name string, priv tmcrypto.PrivKey, algo hd.PubKeyType) (Info, error) {
+func (ks keystore) writeLocalKey(name string, priv tmcrypto.PrivKey, algo hd.PubKeyType, addr sdk.AccAddress) (Info, error) {
 	// encrypt private key using keyring
 	pub := priv.PubKey()
 
-	info := newLocalInfo(name, pub, string(CryptoCdc.MustMarshalBinaryBare(priv)), algo)
+	info := newLocalInfo(name, pub, string(CryptoCdc.MustMarshalBinaryBare(priv)), algo, addr)
 	if err := ks.writeInfo(info); err != nil {
 		return nil, err
 	}
@@ -725,9 +809,20 @@ func (ks keystore) writeInfo(info Info) error {
 		return err
 	}
 
+	keynames, err := ks.KeyNamesByAddress(info.GetAddress())
+	if err != nil {
+		return err
+	}
+
+	keynames = append(keynames, info.GetName())
+	keynamesBz, err := CryptoCdc.MarshalBinaryBare(keynames)
+	if err != nil {
+		return err
+	}
+
 	err = ks.db.Set(keyring.Item{
 		Key:  addrHexKeyAsString(info.GetAddress()),
-		Data: key,
+		Data: keynamesBz,
 	})
 	if err != nil {
 		return err
@@ -737,10 +832,16 @@ func (ks keystore) writeInfo(info Info) error {
 }
 
 func (ks keystore) existsInDb(info Info) (bool, error) {
-	if _, err := ks.db.Get(addrHexKeyAsString(info.GetAddress())); err == nil {
-		return true, nil // address lookup succeeds - info exists
-	} else if err != keyring.ErrKeyNotFound {
-		return false, err // received unexpected error - returns error
+	// If both pubkey and address are same, return true
+	keys, err := ks.KeysByAddress(info.GetAddress())
+	if err != nil {
+		return false, err
+	}
+
+	for _, key := range keys {
+		if bytes.Equal(key.GetPubKey().Bytes(), info.GetPubKey().Bytes()) {
+			return true, nil
+		}
 	}
 
 	if _, err := ks.db.Get(string(infoKey(info.GetName()))); err == nil {
@@ -753,8 +854,8 @@ func (ks keystore) existsInDb(info Info) (bool, error) {
 	return false, nil
 }
 
-func (ks keystore) writeOfflineKey(name string, pub tmcrypto.PubKey, algo hd.PubKeyType) (Info, error) {
-	info := newOfflineInfo(name, pub, algo)
+func (ks keystore) writeOfflineKey(name string, pub tmcrypto.PubKey, algo hd.PubKeyType, addr sdk.AccAddress) (Info, error) {
+	info := newOfflineInfo(name, pub, algo, addr)
 	err := ks.writeInfo(info)
 	if err != nil {
 		return nil, err
@@ -763,8 +864,8 @@ func (ks keystore) writeOfflineKey(name string, pub tmcrypto.PubKey, algo hd.Pub
 	return info, nil
 }
 
-func (ks keystore) writeMultisigKey(name string, pub tmcrypto.PubKey) (Info, error) {
-	info := NewMultiInfo(name, pub)
+func (ks keystore) writeMultisigKey(name string, pub tmcrypto.PubKey, addr sdk.AccAddress) (Info, error) {
+	info := NewMultiInfo(name, pub, addr)
 	err := ks.writeInfo(info)
 	if err != nil {
 		return nil, err

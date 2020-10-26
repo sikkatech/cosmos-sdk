@@ -1,6 +1,7 @@
 package keyring
 
 import (
+	"bytes"
 	"fmt"
 	"strings"
 	"testing"
@@ -44,6 +45,11 @@ func TestNewKeyring(t *testing.T) {
 	info, _, err := kr.NewMnemonic("foo", English, sdk.FullFundraiserPath, hd.Secp256k1)
 	require.NoError(t, err)
 	require.Equal(t, "foo", info.GetName())
+
+	addr := sdk.AccAddress([]byte("any----------address"))
+	newInfo := info.WithNameAndAddress("bar", addr)
+	require.True(t, bytes.Equal(newInfo.GetAddress().Bytes(), addr.Bytes()))
+	require.Equal(t, "bar", newInfo.GetName())
 }
 
 func TestKeyManagementKeyRing(t *testing.T) {
@@ -107,7 +113,7 @@ func TestKeyManagementKeyRing(t *testing.T) {
 	o1 := "offline"
 	priv1 := ed25519.GenPrivKey()
 	pub1 := priv1.PubKey()
-	i, err = kb.SavePubKey(o1, pub1, hd.Ed25519Type)
+	i, err = kb.SavePubKey(o1, pub1, hd.Ed25519Type, sdk.AccAddress{})
 	require.Nil(t, err)
 	require.Equal(t, pub1, i.GetPubKey())
 	require.Equal(t, o1, i.GetName())
@@ -215,7 +221,7 @@ func TestExportImportKeyRing(t *testing.T) {
 	john, err := kb.Key("john")
 	require.NoError(t, err)
 	require.Equal(t, info.GetName(), "john")
-	johnAddr := info.GetPubKey().Address()
+	johnAddr := info.GetAddress()
 
 	armor, err := kb.ExportPrivKeyArmor("john", "apassphrase")
 	require.NoError(t, err)
@@ -228,7 +234,7 @@ func TestExportImportKeyRing(t *testing.T) {
 	john2, err := kb.Key("john2")
 	require.NoError(t, err)
 
-	require.Equal(t, john.GetPubKey().Address(), johnAddr)
+	require.Equal(t, john.GetAddress(), johnAddr)
 	require.Equal(t, john.GetName(), "john")
 	require.Equal(t, john.GetAddress(), john2.GetAddress())
 	require.Equal(t, john.GetAlgo(), john2.GetAlgo())
@@ -246,11 +252,11 @@ func TestExportImportPubKeyKeyRing(t *testing.T) {
 	require.Nil(t, err)
 	require.NotEqual(t, info, "")
 	require.Equal(t, info.GetName(), "john")
-	addr := info.GetPubKey().Address()
+	addr := info.GetAddress()
 	john, err := kb.Key("john")
 	require.NoError(t, err)
 	require.Equal(t, john.GetName(), "john")
-	require.Equal(t, john.GetPubKey().Address(), addr)
+	require.Equal(t, john.GetAddress(), addr)
 
 	// Export the public key only
 	armor, err := kb.ExportPubKeyArmor("john")
@@ -333,10 +339,10 @@ func TestSeedPhraseKeyRing(t *testing.T) {
 	// let us re-create it from the mnemonic-phrase
 	params := *hd.NewFundraiserParams(0, sdk.CoinType, 0)
 	hdPath := params.String()
-	newInfo, err := kb.NewAccount(n2, mnemonic, DefaultBIP39Passphrase, hdPath, hd.Secp256k1)
+	newInfo, err := kb.NewAccount(n2, mnemonic, DefaultBIP39Passphrase, hdPath, hd.Secp256k1, sdk.AccAddress{})
 	require.NoError(t, err)
 	require.Equal(t, n2, newInfo.GetName())
-	require.Equal(t, info.GetPubKey().Address(), newInfo.GetPubKey().Address())
+	require.Equal(t, info.GetAddress(), newInfo.GetAddress())
 	require.Equal(t, info.GetPubKey(), newInfo.GetPubKey())
 }
 
@@ -384,7 +390,7 @@ func TestInMemoryCreateMultisig(t *testing.T) {
 			secp256k1.GenPrivKey().PubKey(),
 		},
 	)
-	_, err = kb.SaveMultisig("multi", multi)
+	_, err = kb.SaveMultisig("multi", multi, sdk.AccAddress{})
 	require.NoError(t, err)
 }
 
@@ -393,7 +399,7 @@ func TestInMemoryCreateAccountInvalidMnemonic(t *testing.T) {
 	_, err := kb.NewAccount(
 		"some_account",
 		"malarkey pair crucial catch public canyon evil outer stage ten gym tornado",
-		"", hd.CreateHDPath(118, 0, 0).String(), hd.Secp256k1)
+		"", hd.CreateHDPath(118, 0, 0).String(), hd.Secp256k1, sdk.AccAddress{})
 	require.Error(t, err)
 	require.Equal(t, "Invalid mnemonic", err.Error())
 }
@@ -460,7 +466,7 @@ func TestInMemoryKeyManagement(t *testing.T) {
 	o1 := "offline"
 	priv1 := ed25519.GenPrivKey()
 	pub1 := priv1.PubKey()
-	i, err = cstore.SavePubKey(o1, pub1, hd.Ed25519Type)
+	i, err = cstore.SavePubKey(o1, pub1, hd.Ed25519Type, sdk.AccAddress{})
 	require.Nil(t, err)
 	require.Equal(t, pub1, i.GetPubKey())
 	require.Equal(t, o1, i.GetName())
@@ -572,7 +578,7 @@ func TestInMemoryExportImport(t *testing.T) {
 	john, err := cstore.Key("john")
 	require.NoError(t, err)
 	require.Equal(t, info.GetName(), "john")
-	johnAddr := info.GetPubKey().Address()
+	johnAddr := info.GetAddress()
 
 	armor, err := cstore.ExportPubKeyArmor("john")
 	require.NoError(t, err)
@@ -585,7 +591,7 @@ func TestInMemoryExportImport(t *testing.T) {
 	john2, err := cstore.Key("john2")
 	require.NoError(t, err)
 
-	require.Equal(t, john.GetPubKey().Address(), johnAddr)
+	require.Equal(t, john.GetAddress(), johnAddr)
 	require.Equal(t, john.GetName(), "john")
 	require.Equal(t, john.GetAddress(), john2.GetAddress())
 	require.Equal(t, john.GetAlgo(), john2.GetAlgo())
@@ -627,11 +633,11 @@ func TestInMemoryExportImportPubKey(t *testing.T) {
 	require.Nil(t, err)
 	require.NotEqual(t, info, "")
 	require.Equal(t, info.GetName(), "john")
-	addr := info.GetPubKey().Address()
+	addr := info.GetAddress()
 	john, err := cstore.Key("john")
 	require.NoError(t, err)
 	require.Equal(t, john.GetName(), "john")
-	require.Equal(t, john.GetPubKey().Address(), addr)
+	require.Equal(t, john.GetAddress(), addr)
 
 	// Export the public key only
 	armor, err := cstore.ExportPubKeyArmor("john")
@@ -711,10 +717,10 @@ func TestInMemorySeedPhrase(t *testing.T) {
 	// let us re-create it from the mnemonic-phrase
 	params := *hd.NewFundraiserParams(0, sdk.CoinType, 0)
 	hdPath := params.String()
-	newInfo, err := cstore.NewAccount(n2, mnemonic, DefaultBIP39Passphrase, hdPath, algo)
+	newInfo, err := cstore.NewAccount(n2, mnemonic, DefaultBIP39Passphrase, hdPath, algo, sdk.AccAddress{})
 	require.NoError(t, err)
 	require.Equal(t, n2, newInfo.GetName())
-	require.Equal(t, info.GetPubKey().Address(), newInfo.GetPubKey().Address())
+	require.Equal(t, info.GetAddress(), newInfo.GetAddress())
 	require.Equal(t, info.GetPubKey(), newInfo.GetPubKey())
 }
 
@@ -729,11 +735,11 @@ func TestKeyChain_ShouldFailWhenAddingSameGeneratedAccount(t *testing.T) {
 	require.NoError(t, kr.Delete("test"))
 
 	path := hd.CreateHDPath(118, 0, 0).String()
-	_, err = kr.NewAccount("test1", seed, "", path, hd.Secp256k1)
+	_, err = kr.NewAccount("test1", seed, "", path, hd.Secp256k1, sdk.AccAddress{})
 	require.NoError(t, err)
 
 	// Creating another account with different uid but same seed should fail due to have same pub address
-	_, err = kr.NewAccount("test2", seed, "", path, hd.Secp256k1)
+	_, err = kr.NewAccount("test2", seed, "", path, hd.Secp256k1, sdk.AccAddress{})
 	require.Error(t, err)
 }
 
@@ -833,10 +839,10 @@ func TestAltKeyring_NewAccount(t *testing.T) {
 	uid := "newUid"
 
 	// Fails on creating unsupported pubKeyType
-	_, err = keyring.NewAccount(uid, mnemonic, DefaultBIP39Passphrase, sdk.FullFundraiserPath, notSupportedAlgo{})
+	_, err = keyring.NewAccount(uid, mnemonic, DefaultBIP39Passphrase, sdk.FullFundraiserPath, notSupportedAlgo{}, sdk.AccAddress{})
 	require.EqualError(t, err, ErrUnsupportedSigningAlgo.Error())
 
-	info, err := keyring.NewAccount(uid, mnemonic, DefaultBIP39Passphrase, sdk.FullFundraiserPath, hd.Secp256k1)
+	info, err := keyring.NewAccount(uid, mnemonic, DefaultBIP39Passphrase, sdk.FullFundraiserPath, hd.Secp256k1, sdk.AccAddress{})
 	require.NoError(t, err)
 
 	require.Equal(t, uid, info.GetName())
@@ -924,7 +930,7 @@ func TestAltKeyring_SavePubKey(t *testing.T) {
 	priv := ed25519.GenPrivKey()
 	pub := priv.PubKey()
 
-	info, err := keyring.SavePubKey(key, pub, hd.Secp256k1.Name())
+	info, err := keyring.SavePubKey(key, pub, hd.Secp256k1.Name(), sdk.AccAddress{})
 	require.Nil(t, err)
 	require.Equal(t, pub, info.GetPubKey())
 	require.Equal(t, key, info.GetName())
@@ -953,7 +959,7 @@ func TestAltKeyring_SaveMultisig(t *testing.T) {
 		},
 	)
 
-	info, err := keyring.SaveMultisig(key, pub)
+	info, err := keyring.SaveMultisig(key, pub, sdk.AccAddress{})
 	require.Nil(t, err)
 	require.Equal(t, pub, info.GetPubKey())
 	require.Equal(t, key, info.GetName())

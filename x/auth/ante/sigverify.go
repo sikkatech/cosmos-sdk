@@ -70,6 +70,7 @@ func (spkd SetPubKeyDecorator) AnteHandle(ctx sdk.Context, tx sdk.Tx, simulate b
 			}
 			pk = simSecp256k1Pubkey
 		}
+
 		acc, err := GetSignerAcc(ctx, spkd.ak, signers[i])
 		if err != nil {
 			return ctx, err

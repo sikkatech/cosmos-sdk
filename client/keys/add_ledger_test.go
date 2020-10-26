@@ -124,4 +124,17 @@ func Test_runAddCmdLedger(t *testing.T) {
 	require.Equal(t,
 		"cosmospub1addwnpepqd87l8xhcnrrtzxnkql7k55ph8fr9jarf4hn6udwukfprlalu8lgw0urza0",
 		sdk.MustBech32ifyPubKey(sdk.Bech32PubKeyTypeAccPub, key1.GetPubKey()))
+
+	cmd.SetArgs([]string{
+		"keyname2",
+		fmt.Sprintf("--%s=true", flags.FlagUseLedger),
+		fmt.Sprintf("--%s=%s", cli.OutputFlag, OutputFormatText),
+		fmt.Sprintf("--%s=%s", flags.FlagKeyAlgorithm, string(hd.Secp256k1Type)),
+		fmt.Sprintf("--%s=%d", flagCoinType, sdk.CoinType),
+		fmt.Sprintf("--%s=%s", flags.FlagKeyringBackend, keyring.BackendTest),
+		fmt.Sprintf("--%s=%s", flagAddress, "cosmos18ls2uvzhjcp4kfcdgk0vtcv846wgwj2v479ulf"),
+	})
+	mockIn.Reset("test1234\ntest1234\n")
+
+	require.NoError(t, cmd.ExecuteContext(ctx))
 }

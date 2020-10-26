@@ -78,7 +78,7 @@ func runShowCmd(cmd *cobra.Command, args []string) (err error) {
 		}
 
 		multikey := multisig.NewLegacyAminoPubKey(multisigThreshold, pks)
-		info = keyring.NewMultiInfo(defaultMultiSigKeyName, multikey)
+		info = keyring.NewMultiInfo(defaultMultiSigKeyName, multikey, multikey.Address().Bytes())
 	}
 
 	isShowAddr, _ := cmd.Flags().GetBool(FlagAddress)
@@ -150,7 +150,7 @@ func fetchKey(kb keyring.Keyring, keyref string) (keyring.Info, error) {
 
 		info, err = kb.KeyByAddress(accAddr)
 		if err != nil {
-			return info, errors.New("key not found")
+			return info, err
 		}
 	}
 	return info, nil

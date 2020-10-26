@@ -9,6 +9,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/crypto/keyring"
 	"github.com/cosmos/cosmos-sdk/server"
 	"github.com/cosmos/cosmos-sdk/types"
+	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
 func TestGenerateCoinKey(t *testing.T) {
@@ -17,7 +18,7 @@ func TestGenerateCoinKey(t *testing.T) {
 	require.NoError(t, err)
 
 	// Test creation
-	info, err := keyring.NewInMemory().NewAccount("xxx", mnemonic, "", hd.NewFundraiserParams(0, types.GetConfig().GetCoinType(), 0).String(), hd.Secp256k1)
+	info, err := keyring.NewInMemory().NewAccount("xxx", mnemonic, "", hd.NewFundraiserParams(0, types.GetConfig().GetCoinType(), 0).String(), hd.Secp256k1, sdk.AccAddress{})
 	require.NoError(t, err)
 	require.Equal(t, addr, info.GetAddress())
 }
@@ -37,7 +38,7 @@ func TestGenerateSaveCoinKey(t *testing.T) {
 	require.Equal(t, addr, info.GetAddress())
 
 	// Test in-memory recovery
-	info, err = keyring.NewInMemory().NewAccount("xxx", mnemonic, "", hd.NewFundraiserParams(0, types.GetConfig().GetCoinType(), 0).String(), hd.Secp256k1)
+	info, err = keyring.NewInMemory().NewAccount("xxx", mnemonic, "", hd.NewFundraiserParams(0, types.GetConfig().GetCoinType(), 0).String(), hd.Secp256k1, sdk.AccAddress{})
 	require.NoError(t, err)
 	require.Equal(t, addr, info.GetAddress())
 }
