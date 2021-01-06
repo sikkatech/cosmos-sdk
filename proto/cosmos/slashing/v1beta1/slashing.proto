@@ -53,3 +53,22 @@ message Params {
     (gogoproto.nullable)   = false
   ];
 }
+
+message SlashEvent {
+  bytes address = 1 [
+    (gogoproto.moretags)   = "yaml:\"address\"",
+    (gogoproto.casttype) = "github.com/cosmos/cosmos-sdk/types.ValAddress"
+  ];
+  bytes validator_voting_percent = 2 [
+    (gogoproto.moretags)   = "yaml:\"validator_voting_percent\"",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable)   = false
+  ];
+  bytes slash_percent = 3 [
+    (gogoproto.moretags)   = "yaml:\"slash_percent\"",
+    (gogoproto.customtype) = "github.com/cosmos/cosmos-sdk/types.Dec",
+    (gogoproto.nullable)   = false
+  ];
+  int64 distribution_height = 4 [(gogoproto.moretags) = "yaml:\"distribution_height\""];
+  int64 validator_power = 5 [(gogoproto.moretags) = "yaml:\"validator_power\""];
+}

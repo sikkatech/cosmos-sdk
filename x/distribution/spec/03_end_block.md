@@ -30,4 +30,5 @@ func AllocateTokens(feesCollected sdk.Coins, feePool FeePool, proposer Validator
 
      SetValidatorDistribution(proposer)
      SetFeePool(feePool)
+
 ```

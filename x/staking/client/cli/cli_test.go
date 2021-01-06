@@ -858,6 +858,7 @@ func (s *IntegrationTestSuite) TestGetCmdQueryParams() {
 			"with text output",
 			[]string{fmt.Sprintf("--%s=text", tmcli.OutputFlag)},
 			`bond_denom: stake
+epoch_interval: 10
 historical_entries: 10000
 max_entries: 7
 max_validators: 100
@@ -866,7 +867,7 @@ unbonding_time: 1814400s`,
 		{
 			"with json output",
 			[]string{fmt.Sprintf("--%s=json", tmcli.OutputFlag)},
-			`{"unbonding_time":"1814400s","max_validators":100,"max_entries":7,"historical_entries":10000,"bond_denom":"stake"}`,
+			`{"unbonding_time":"1814400s","max_validators":100,"max_entries":7,"historical_entries":10000,"bond_denom":"stake","epoch_interval":"10"}`,
 		},
 	}
 	for _, tc := range testCases {

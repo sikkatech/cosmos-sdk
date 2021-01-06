@@ -12,7 +12,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/staking/types"
 )
 
-// Calculate the ValidatorUpdates for the current block
+// Calculate the ValidatorUpdates for the epoch
 // Called in each EndBlock
 func (k Keeper) BlockValidatorUpdates(ctx sdk.Context) []abci.ValidatorUpdate {
 	// Calculate validator set changes.

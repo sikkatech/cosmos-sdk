@@ -8,6 +8,7 @@ import (
 
 	"github.com/cosmos/cosmos-sdk/codec"
 	sdk "github.com/cosmos/cosmos-sdk/types"
+	epochkeeper "github.com/cosmos/cosmos-sdk/x/epoching/keeper"
 	paramtypes "github.com/cosmos/cosmos-sdk/x/params/types"
 	"github.com/cosmos/cosmos-sdk/x/staking/types"
 )
@@ -26,6 +27,7 @@ type Keeper struct {
 	cdc                codec.BinaryMarshaler
 	authKeeper         types.AccountKeeper
 	bankKeeper         types.BankKeeper
+	epochKeeper        epochkeeper.Keeper
 	hooks              types.StakingHooks
 	paramstore         paramtypes.Subspace
 	validatorCache     map[string]cachedValidator
@@ -51,11 +53,16 @@ func NewKeeper(
 		panic(fmt.Sprintf("%s module account has not been set", types.NotBondedPoolName))
 	}
 
+	if addr := ak.GetModuleAddress(types.EpochDelegationPoolName); addr == nil {
+		panic(fmt.Sprintf("%s module account has not been set", types.EpochDelegationPoolName))
+	}
+
 	return Keeper{
 		storeKey:           key,
 		cdc:                cdc,
 		authKeeper:         ak,
 		bankKeeper:         bk,
+		epochKeeper:        epochkeeper.NewKeeper(cdc, key),
 		paramstore:         ps,
 		hooks:              nil,
 		validatorCache:     make(map[string]cachedValidator, aminoCacheSize),

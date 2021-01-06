@@ -593,7 +593,7 @@ func (suite *KeeperTestSuite) TestGRPCQueryRedelegation() {
 	valAddrs := simapp.ConvertAddrsToValAddrs(addrs)
 	val1, val2, val3, val4 := vals[0], vals[1], valAddrs[3], valAddrs[4]
 	delAmount := sdk.TokensFromConsensusPower(1)
-	_, err := app.StakingKeeper.Delegate(ctx, addrAcc1, delAmount, types.Unbonded, val1, true)
+	err := delegateCoinsFromAccount(ctx, app, addrAcc1, delAmount, val1)
 	suite.NoError(err)
 	applyValidatorSetUpdates(suite.T(), ctx, app.StakingKeeper, -1)
 
@@ -753,11 +753,11 @@ func createValidators(t *testing.T, ctx sdk.Context, app *simapp.SimApp, powers 
 	app.StakingKeeper.SetNewValidatorByPowerIndex(ctx, val1)
 	app.StakingKeeper.SetNewValidatorByPowerIndex(ctx, val2)
 
-	_, err := app.StakingKeeper.Delegate(ctx, addrs[0], sdk.TokensFromConsensusPower(powers[0]), types.Unbonded, val1, true)
+	err := delegateCoinsFromAccount(ctx, app, addrs[0], sdk.TokensFromConsensusPower(powers[0]), val1)
 	require.NoError(t, err)
-	_, err = app.StakingKeeper.Delegate(ctx, addrs[1], sdk.TokensFromConsensusPower(powers[1]), types.Unbonded, val2, true)
+	err = delegateCoinsFromAccount(ctx, app, addrs[1], sdk.TokensFromConsensusPower(powers[1]), val2)
 	require.NoError(t, err)
-	_, err = app.StakingKeeper.Delegate(ctx, addrs[0], sdk.TokensFromConsensusPower(powers[2]), types.Unbonded, val2, true)
+	err = delegateCoinsFromAccount(ctx, app, addrs[0], sdk.TokensFromConsensusPower(powers[2]), val2)
 	require.NoError(t, err)
 	applyValidatorSetUpdates(t, ctx, app.StakingKeeper, -1)
 

@@ -11,7 +11,7 @@ In this section we describe the "hooks" - slashing module code that runs when ot
 Upon successful first-time bonding of a new validator, we create a new `ValidatorSigningInfo` structure for the
 now-bonded validator, which `StartHeight` of the current block.
 
-```
+```go
 onValidatorBonded(address sdk.ValAddress)
 
   signingInfo, found = GetValidatorSigningInfo(address)
