@@ -212,6 +212,9 @@ func (tp *TextProposal) ProposalRoute() string { return RouterKey }
 // ProposalType is "Text"
 func (tp *TextProposal) ProposalType() string { return ProposalTypeText }
 
+// ProposalType is "Text"
+func (tp *TextProposal) TallyRoute() string { return tp.TallyStrategy }
+
 // ValidateBasic validates the content's title and description of the proposal
 func (tp *TextProposal) ValidateBasic() error { return ValidateAbstract(tp) }
 
