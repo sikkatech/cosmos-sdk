@@ -31,6 +31,9 @@ type Keeper struct {
 
 	// Proposal router
 	router types.Router
+
+	// Tally router
+	tallyrouter types.TallyRouter
 }
 
 // NewKeeper returns a governance keeper. It handles:
@@ -74,6 +77,11 @@ func (keeper Keeper) Logger(ctx sdk.Context) log.Logger {
 // Router returns the gov Keeper's Router
 func (keeper Keeper) Router() types.Router {
 	return keeper.router
+}
+
+// TallyRouter returns the gov Keeper's Router
+func (keeper Keeper) TallyRouter() types.TallyRouter {
+	return keeper.tallyrouter
 }
 
 // GetGovernanceAccount returns the governance ModuleAccount

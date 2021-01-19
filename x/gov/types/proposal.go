@@ -73,6 +73,14 @@ func (p Proposal) ProposalRoute() string {
 	return content.ProposalRoute()
 }
 
+func (p Proposal) TallyRoute() string {
+	content := p.GetContent()
+	if content == nil {
+		return ""
+	}
+	return content.TallyRoute()
+}
+
 func (p Proposal) GetTitle() string {
 	content := p.GetContent()
 	if content == nil {
