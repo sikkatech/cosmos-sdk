@@ -26,6 +26,7 @@ const (
 	flagDepositor    = "depositor"
 	flagStatus       = "status"
 	FlagProposal     = "proposal"
+	FlagTallyRoute   = "tallyroute"
 )
 
 type proposal struct {
@@ -33,6 +34,7 @@ type proposal struct {
 	Description string
 	Type        string
 	Deposit     string
+	TallyRoute  string
 }
 
 // ProposalFlags defines the core required fields of a proposal. It is used to
@@ -118,7 +120,7 @@ $ %s tx gov submit-proposal --title="Test Proposal" --description="My awesome pr
 				return err
 			}
 
-			content := types.ContentFromProposalType(proposal.Title, proposal.Description, proposal.Type)
+			content := types.ContentFromProposalType(proposal.Title, proposal.Description, proposal.Type, proposal.TallyRoute)
 
 			msg, err := types.NewMsgSubmitProposal(content, amount, clientCtx.GetFromAddress())
 			if err != nil {

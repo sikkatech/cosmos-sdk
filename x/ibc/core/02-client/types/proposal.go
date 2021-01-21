@@ -2,6 +2,7 @@ package types
 
 import (
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
+	"github.com/cosmos/cosmos-sdk/x/gov/stakingtally"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 	host "github.com/cosmos/cosmos-sdk/x/ibc/core/24-host"
 	"github.com/cosmos/cosmos-sdk/x/ibc/core/exported"
@@ -43,6 +44,9 @@ func (cup *ClientUpdateProposal) ProposalRoute() string { return RouterKey }
 
 // ProposalType returns the type of a client update proposal.
 func (cup *ClientUpdateProposal) ProposalType() string { return ProposalTypeClientUpdate }
+
+// TallyRoute returns the tally route of a client update proposal.
+func (cup *ClientUpdateProposal) TallyRoute() string { return stakingtally.TallyRoute }
 
 // ValidateBasic runs basic stateless validity checks
 func (cup *ClientUpdateProposal) ValidateBasic() error {

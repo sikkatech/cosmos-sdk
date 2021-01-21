@@ -5,6 +5,11 @@ import (
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 )
 
+const (
+	// TallyRoute determines the default tally route that points to this strategy
+	TallyRoute = "staking"
+)
+
 // ValidatorGovInfo used for staking tallying
 type ValidatorGovInfo struct {
 	Address             sdk.ValAddress      // address of the validator operator

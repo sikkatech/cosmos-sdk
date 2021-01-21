@@ -77,7 +77,7 @@ func handleStakingTally(ctx sdk.Context, proposal govtypes.Proposal, gk govkeepe
 			return false
 		})
 
-		gk.deleteVote(ctx, vote.ProposalId, voter)
+		gk.DeleteVote(ctx, vote.ProposalId, voter)
 		return false
 	})
 

@@ -21,6 +21,7 @@ func parseSubmitProposalFlags(fs *pflag.FlagSet) (*proposal, error) {
 		proposal.Description, _ = fs.GetString(FlagDescription)
 		proposal.Type = govutils.NormalizeProposalType(proposalType)
 		proposal.Deposit, _ = fs.GetString(FlagDeposit)
+		proposal.TallyRoute, _ = fs.GetString(FlagTallyRoute)
 		return proposal, nil
 	}
 

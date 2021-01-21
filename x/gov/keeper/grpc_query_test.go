@@ -49,7 +49,7 @@ func (suite *KeeperTestSuite) TestGRPCQueryProposal() {
 			"valid request",
 			func() {
 				req = &types.QueryProposalRequest{ProposalId: 1}
-				testProposal := types.NewTextProposal("Proposal", "testing proposal")
+				testProposal := types.NewTextProposal("Proposal", "testing proposal", "staking")
 				submittedProposal, err := app.GovKeeper.SubmitProposal(ctx, testProposal)
 				suite.Require().NoError(err)
 				suite.Require().NotEmpty(submittedProposal)
@@ -105,7 +105,7 @@ func (suite *KeeperTestSuite) TestGRPCQueryProposals() {
 				// create 5 test proposals
 				for i := 0; i < 5; i++ {
 					num := strconv.Itoa(i + 1)
-					testProposal := types.NewTextProposal("Proposal"+num, "testing proposal "+num)
+					testProposal := types.NewTextProposal("Proposal"+num, "testing proposal "+num, "staking")
 					proposal, err := app.GovKeeper.SubmitProposal(ctx, testProposal)
 					suite.Require().NotEmpty(proposal)
 					suite.Require().NoError(err)

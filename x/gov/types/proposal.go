@@ -196,8 +196,8 @@ const (
 var _ Content = &TextProposal{}
 
 // NewTextProposal creates a text proposal Content
-func NewTextProposal(title, description string) Content {
-	return &TextProposal{title, description}
+func NewTextProposal(title, description string, tallyRoute string) Content {
+	return &TextProposal{title, description, tallyRoute}
 }
 
 // GetTitle returns the proposal title
@@ -213,7 +213,7 @@ func (tp *TextProposal) ProposalRoute() string { return RouterKey }
 func (tp *TextProposal) ProposalType() string { return ProposalTypeText }
 
 // ProposalType is "Text"
-func (tp *TextProposal) TallyRoute() string { return tp.TallyStrategy }
+func (tp *TextProposal) TallyRoute() string { return tp.Tallystrategy }
 
 // ValidateBasic validates the content's title and description of the proposal
 func (tp *TextProposal) ValidateBasic() error { return ValidateAbstract(tp) }
@@ -239,10 +239,10 @@ func RegisterProposalType(ty string) {
 }
 
 // ContentFromProposalType returns a Content object based on the proposal type.
-func ContentFromProposalType(title, desc, ty string) Content {
+func ContentFromProposalType(title, desc, ty, tallyRoute string) Content {
 	switch ty {
 	case ProposalTypeText:
-		return NewTextProposal(title, desc)
+		return NewTextProposal(title, desc, tallyRoute)
 
 	default:
 		return nil
