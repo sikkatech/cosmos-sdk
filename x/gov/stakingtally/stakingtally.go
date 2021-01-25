@@ -20,7 +20,7 @@ func NewStakingTallyHandler(gk govkeeper.Keeper, sk stakingkeeper.Keeper) govtyp
 
 // Tally iterates over the votes and updates the tally of a proposal based on the voting power of the
 // voters
-func handleStakingTally(ctx sdk.Context, proposal govtypes.Proposal, gk govkeeper.Keeper, sk stakingkeeper.Keeper) (passes bool, burnDeposits bool, tallyResults types.TallyResult) {
+func handleStakingTally(ctx sdk.Context, proposal govtypes.Proposal, gk govkeeper.Keeper, sk stakingkeeper.Keeper) (passes bool, burnDeposits bool, tallyResults govtypes.TallyResult) {
 	results := make(map[govtypes.VoteOption]sdk.Dec)
 	results[govtypes.OptionYes] = sdk.ZeroDec()
 	results[govtypes.OptionAbstain] = sdk.ZeroDec()
@@ -37,13 +37,13 @@ func handleStakingTally(ctx sdk.Context, proposal govtypes.Proposal, gk govkeepe
 			validator.GetBondedTokens(),
 			validator.GetDelegatorShares(),
 			sdk.ZeroDec(),
-			types.OptionEmpty,
+			govtypes.OptionEmpty,
 		)
 
 		return false
 	})
 
-	gk.IterateVotes(ctx, proposal.ProposalId, func(vote types.Vote) bool {
+	gk.IterateVotes(ctx, proposal.ProposalId, func(vote govtypes.Vote) bool {
 		// if validator, just record it in the map
 		voter, err := sdk.AccAddressFromBech32(vote.Voter)
 
@@ -83,7 +83,7 @@ func handleStakingTally(ctx sdk.Context, proposal govtypes.Proposal, gk govkeepe
 
 	// iterate over the validators again to tally their voting power
 	for _, val := range currValidators {
-		if val.Vote == types.OptionEmpty {
+		if val.Vote == govtypes.OptionEmpty {
 			continue
 		}
 
@@ -95,7 +95,7 @@ func handleStakingTally(ctx sdk.Context, proposal govtypes.Proposal, gk govkeepe
 	}
 
 	tallyParams := gk.GetTallyParams(ctx)
-	tallyResults = types.NewTallyResultFromMap(results)
+	tallyResults = govtypes.NewTallyResultFromMap(results)
 
 	// TODO: Upgrade the spec to cover all of these cases & remove pseudocode.
 	// If there is no staked coins, the proposal fails
