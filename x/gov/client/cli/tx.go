@@ -13,7 +13,6 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/version"
 	govutils "github.com/cosmos/cosmos-sdk/x/gov/client/utils"
-	"github.com/cosmos/cosmos-sdk/x/gov/stakingtally"
 	"github.com/cosmos/cosmos-sdk/x/gov/types"
 )
 
@@ -142,8 +141,8 @@ $ %s tx gov submit-proposal --title="Test Proposal" --description="My awesome pr
 	cmd.Flags().String(FlagProposalType, "", "The proposal Type")
 	cmd.Flags().String(FlagDeposit, "", "The proposal deposit")
 	cmd.Flags().String(FlagProposal, "", "Proposal file path (if this path is given, other proposal flags are ignored)")
-	// If tallyroute not passed in, by default use stakingtally strategy
-	cmd.Flags().String(FlagTallyRoute, stakingtally.TallyRoute, "Tally route for requested tally strategy")
+	// TODO: If tallyroute not passed in, by default use stakingtally strategy
+	cmd.Flags().String(FlagTallyRoute, "", "Tally route for requested tally strategy")
 	flags.AddTxFlagsToCmd(cmd)
 
 	return cmd

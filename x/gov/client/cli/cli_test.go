@@ -46,7 +46,7 @@ func (s *IntegrationTestSuite) SetupSuite() {
 
 	// create a proposal with deposit
 	_, err = govtestutil.MsgSubmitProposal(val.ClientCtx, val.Address.String(),
-		"Text Proposal 1", "Where is the title!?", types.ProposalTypeText,
+		"Text Proposal 1", "Where is the title!?", types.ProposalTypeText, stakingtally.TallyRoute,
 		fmt.Sprintf("--%s=%s", cli.FlagDeposit, sdk.NewCoin(s.cfg.BondDenom, types.DefaultMinDepositTokens).String()))
 	s.Require().NoError(err)
 	_, err = s.network.WaitForHeight(1)
