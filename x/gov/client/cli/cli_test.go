@@ -20,6 +20,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/gov/client/cli"
 	govtestutil "github.com/cosmos/cosmos-sdk/x/gov/client/testutil"
+	"github.com/cosmos/cosmos-sdk/x/gov/stakingtally"
 	"github.com/cosmos/cosmos-sdk/x/gov/types"
 )
 
@@ -57,7 +58,7 @@ func (s *IntegrationTestSuite) SetupSuite() {
 
 	// create a proposal without deposit
 	_, err = govtestutil.MsgSubmitProposal(val.ClientCtx, val.Address.String(),
-		"Text Proposal 2", "Where is the title!?", types.ProposalTypeText)
+		"Text Proposal 2", "Where is the title!?", types.ProposalTypeText, stakingtally.TallyRoute)
 	s.Require().NoError(err)
 	_, err = s.network.WaitForHeight(1)
 	s.Require().NoError(err)
