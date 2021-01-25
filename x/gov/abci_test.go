@@ -12,6 +12,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/simapp"
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/x/gov"
+	"github.com/cosmos/cosmos-sdk/x/gov/stakingtally"
 	"github.com/cosmos/cosmos-sdk/x/gov/types"
 	"github.com/cosmos/cosmos-sdk/x/staking"
 )
@@ -31,7 +32,7 @@ func TestTickExpiredDepositPeriod(t *testing.T) {
 	inactiveQueue.Close()
 
 	newProposalMsg, err := types.NewMsgSubmitProposal(
-		types.ContentFromProposalType("test", "test", types.ProposalTypeText),
+		types.ContentFromProposalType("test", "test", types.ProposalTypeText, stakingtally.TallyRoute),
 		sdk.Coins{sdk.NewInt64Coin(sdk.DefaultBondDenom, 5)},
 		addrs[0],
 	)
@@ -83,7 +84,7 @@ func TestTickMultipleExpiredDepositPeriod(t *testing.T) {
 	inactiveQueue.Close()
 
 	newProposalMsg, err := types.NewMsgSubmitProposal(
-		types.ContentFromProposalType("test", "test", types.ProposalTypeText),
+		types.ContentFromProposalType("test", "test", types.ProposalTypeText, stakingtally.TallyRoute),
 		sdk.Coins{sdk.NewInt64Coin(sdk.DefaultBondDenom, 5)},
 		addrs[0],
 	)
@@ -106,7 +107,7 @@ func TestTickMultipleExpiredDepositPeriod(t *testing.T) {
 	inactiveQueue.Close()
 
 	newProposalMsg2, err := types.NewMsgSubmitProposal(
-		types.ContentFromProposalType("test2", "test2", types.ProposalTypeText),
+		types.ContentFromProposalType("test2", "test2", types.ProposalTypeText, stakingtally.TallyRoute),
 		sdk.Coins{sdk.NewInt64Coin(sdk.DefaultBondDenom, 5)},
 		addrs[0],
 	)
@@ -163,7 +164,7 @@ func TestTickPassedDepositPeriod(t *testing.T) {
 	activeQueue.Close()
 
 	newProposalMsg, err := types.NewMsgSubmitProposal(
-		types.ContentFromProposalType("test2", "test2", types.ProposalTypeText),
+		types.ContentFromProposalType("test2", "test2", types.ProposalTypeText, stakingtally.TallyRoute),
 		sdk.Coins{sdk.NewInt64Coin(sdk.DefaultBondDenom, 5)},
 		addrs[0],
 	)

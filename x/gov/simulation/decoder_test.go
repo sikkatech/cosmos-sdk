@@ -13,6 +13,7 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 	"github.com/cosmos/cosmos-sdk/types/kv"
 	"github.com/cosmos/cosmos-sdk/x/gov/simulation"
+	"github.com/cosmos/cosmos-sdk/x/gov/stakingtally"
 	"github.com/cosmos/cosmos-sdk/x/gov/types"
 )
 
@@ -26,7 +27,7 @@ func TestDecodeStore(t *testing.T) {
 	dec := simulation.NewDecodeStore(cdc)
 
 	endTime := time.Now().UTC()
-	content := types.ContentFromProposalType("test", "test", types.ProposalTypeText)
+	content := types.ContentFromProposalType("test", "test", types.ProposalTypeText, stakingtally.TallyRoute)
 	proposal, err := types.NewProposal(content, 1, endTime, endTime.Add(24*time.Hour))
 	require.NoError(t, err)
 

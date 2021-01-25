@@ -50,5 +50,6 @@ func (t testContent) GetTitle() string       { return "" }
 func (t testContent) GetDescription() string { return "" }
 func (t testContent) ProposalRoute() string  { return "" }
 func (t testContent) ProposalType() string   { return "" }
+func (t testContent) TallyRoute() string     { return "" }
 func (t testContent) ValidateBasic() error   { return nil }
 func (t testContent) String() string         { return "" }
