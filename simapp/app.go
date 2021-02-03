@@ -299,8 +299,9 @@ func NewSimApp(
 		&stakingKeeper, govRouter, tallyRouter,
 	)
 
-	// Be sure to Seal() tallyrouter after registering all routes
-	tallyRouter.AddRoute(stakingtally.TallyRoute, stakingtally.NewStakingTallyHandler(app.GovKeeper, app.StakingKeeper)).Seal()
+	// TODO: Make requirement to set a Root Tally Route, panic or something if not set
+	tallyRouter.AddRoute(govtypes.RootTallyRoute, stakingtally.NewStakingTallyHandler(app.GovKeeper, app.StakingKeeper))
+	tallyRouter.AddRoute(stakingtally.TallyRoute, stakingtally.NewStakingTallyHandler(app.GovKeeper, app.StakingKeeper))
 
 	// Create Transfer Keepers
 	app.TransferKeeper = ibctransferkeeper.NewKeeper(

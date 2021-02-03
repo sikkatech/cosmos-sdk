@@ -15,7 +15,6 @@ type TallyRouter interface {
 	AddRoute(r string, h TallyStrategy) (rtr TallyRouter)
 	HasRoute(r string) bool
 	GetRoute(path string) (h TallyStrategy)
-	Seal()
 }
 
 type tallyrouter struct {
@@ -28,15 +27,6 @@ func NewTallyRouter() TallyRouter {
 	return &tallyrouter{
 		routes: make(map[string]TallyStrategy),
 	}
-}
-
-// Seal seals the router which prohibits any subsequent route handlers to be
-// added. Seal will panic if called more than once.
-func (rtr *tallyrouter) Seal() {
-	if rtr.sealed {
-		panic("router already sealed")
-	}
-	rtr.sealed = true
 }
 
 // AddRoute adds a governance handler for a given path. It returns the Router
@@ -65,7 +55,7 @@ func (rtr *tallyrouter) HasRoute(path string) bool {
 // GetRoute returns a Handler for a given path.
 func (rtr *tallyrouter) GetRoute(path string) TallyStrategy {
 	if !rtr.HasRoute(path) {
-		panic(fmt.Sprintf("route \"%s\" does not exist", path))
+		return nil
 	}
 
 	return rtr.routes[path]

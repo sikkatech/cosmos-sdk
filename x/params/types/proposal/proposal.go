@@ -6,7 +6,6 @@ import (
 
 	yaml "gopkg.in/yaml.v2"
 
-	stakingtally "github.com/cosmos/cosmos-sdk/x/gov/stakingtally"
 	govtypes "github.com/cosmos/cosmos-sdk/x/gov/types"
 )
 
@@ -40,7 +39,7 @@ func (pcp *ParameterChangeProposal) ProposalRoute() string { return RouterKey }
 func (pcp *ParameterChangeProposal) ProposalType() string { return ProposalTypeChange }
 
 // TallyRoute returns the tally route of a parameter change proposal.
-func (pcp *ParameterChangeProposal) TallyRoute() string { return stakingtally.TallyRoute }
+func (pcp *ParameterChangeProposal) TallyRoute() string { return govtypes.RootTallyRoute }
 
 // ValidateBasic validates the parameter change proposal
 func (pcp *ParameterChangeProposal) ValidateBasic() error {

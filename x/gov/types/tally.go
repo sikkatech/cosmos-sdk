@@ -6,6 +6,11 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
+// Governance message types and routes
+const (
+	RootTallyRoute = "root"
+)
+
 // TallyStrategy defines a function that takes takes a proposal at the end of the Voting period and returns the result
 type TallyStrategy func(ctx sdk.Context, proposal Proposal) (passes bool, burnDeposits bool, tallyResults TallyResult)
 

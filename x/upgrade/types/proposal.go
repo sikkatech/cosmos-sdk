@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	codectypes "github.com/cosmos/cosmos-sdk/codec/types"
-	stakingtally "github.com/cosmos/cosmos-sdk/x/gov/stakingtally"
 	gov "github.com/cosmos/cosmos-sdk/x/gov/types"
 )
 
@@ -32,7 +31,7 @@ func (sup *SoftwareUpgradeProposal) GetTitle() string       { return sup.Title }
 func (sup *SoftwareUpgradeProposal) GetDescription() string { return sup.Description }
 func (sup *SoftwareUpgradeProposal) ProposalRoute() string  { return RouterKey }
 func (sup *SoftwareUpgradeProposal) ProposalType() string   { return ProposalTypeSoftwareUpgrade }
-func (sup *SoftwareUpgradeProposal) TallyRoute() string     { return stakingtally.TallyRoute }
+func (sup *SoftwareUpgradeProposal) TallyRoute() string     { return gov.RootTallyRoute }
 func (sup *SoftwareUpgradeProposal) ValidateBasic() error {
 	if err := sup.Plan.ValidateBasic(); err != nil {
 		return err
@@ -65,7 +64,7 @@ func (csup *CancelSoftwareUpgradeProposal) ProposalRoute() string  { return Rout
 func (csup *CancelSoftwareUpgradeProposal) ProposalType() string {
 	return ProposalTypeCancelSoftwareUpgrade
 }
-func (csup *CancelSoftwareUpgradeProposal) TallyRoute() string { return stakingtally.TallyRoute }
+func (csup *CancelSoftwareUpgradeProposal) TallyRoute() string { return gov.RootTallyRoute }
 func (csup *CancelSoftwareUpgradeProposal) ValidateBasic() error {
 	return gov.ValidateAbstract(csup)
 }
