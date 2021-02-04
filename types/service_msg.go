@@ -1,6 +1,8 @@
 package types
 
 import (
+	strings "strings"
+
 	"github.com/gogo/protobuf/proto"
 )
 
@@ -55,4 +57,10 @@ func (msg ServiceMsg) GetSigners() []AccAddress {
 // Type implements Msg.Type method.
 func (msg ServiceMsg) Type() string {
 	return msg.MethodName
+}
+
+// IsServiceMsg checks if a type URL corresponds to a service method name,
+// i.e. /cosmos.bank.Msg/Send vs /cosmos.bank.MsgSend
+func IsServiceMsg(typeURL string) bool {
+	return strings.Count(typeURL, "/") >= 2
 }

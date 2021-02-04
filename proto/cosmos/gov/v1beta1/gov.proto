@@ -41,6 +41,17 @@ message TextProposal {
   string tallystrategy = 3;
 }
 
+// ExecuteMsgsProposal defines a proposal that executes a msg if approved.
+message ExecuteMsgsProposal {
+  option (cosmos_proto.implements_interface) = "Content";
+
+  option (gogoproto.equal) = true;
+
+  string   title                        = 1;
+  string   description                  = 2;
+  repeated google.protobuf.Any messages = 3;
+}
+
 // Deposit defines an amount deposited by an account address to an active
 // proposal.
 message Deposit {

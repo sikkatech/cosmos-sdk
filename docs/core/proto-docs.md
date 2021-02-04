@@ -243,6 +243,7 @@
 - [cosmos/gov/v1beta1/gov.proto](#cosmos/gov/v1beta1/gov.proto)
     - [Deposit](#cosmos.gov.v1beta1.Deposit)
     - [DepositParams](#cosmos.gov.v1beta1.DepositParams)
+    - [ExecuteMsgsProposal](#cosmos.gov.v1beta1.ExecuteMsgsProposal)
     - [Proposal](#cosmos.gov.v1beta1.Proposal)
     - [TallyParams](#cosmos.gov.v1beta1.TallyParams)
     - [TallyResult](#cosmos.gov.v1beta1.TallyResult)
@@ -3818,6 +3819,23 @@ DepositParams defines the params for deposits on governance proposals.
 
 
 
+<a name="cosmos.gov.v1beta1.ExecuteMsgsProposal"></a>
+
+### ExecuteMsgsProposal
+ExecuteMsgsProposal defines a proposal that executes a msg if approved.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| `title` | [string](#string) |  |  |
+| `description` | [string](#string) |  |  |
+| `messages` | [google.protobuf.Any](#google.protobuf.Any) | repeated |  |
+
+
+
+
+
+
 <a name="cosmos.gov.v1beta1.Proposal"></a>
 
 ### Proposal
@@ -3887,6 +3905,7 @@ manually updated in case of approval.
 | ----- | ---- | ----- | ----------- |
 | `title` | [string](#string) |  |  |
 | `description` | [string](#string) |  |  |
+| `tallystrategy` | [string](#string) |  |  |
 
 
 
