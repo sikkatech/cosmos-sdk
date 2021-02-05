@@ -141,7 +141,6 @@ $ %s tx gov submit-proposal --title="Test Proposal" --description="My awesome pr
 	cmd.Flags().String(FlagProposalType, "", "The proposal Type")
 	cmd.Flags().String(FlagDeposit, "", "The proposal deposit")
 	cmd.Flags().String(FlagProposal, "", "Proposal file path (if this path is given, other proposal flags are ignored)")
-	// TODO: If tallyroute not passed in, by default use stakingtally strategy
 	cmd.Flags().String(FlagTallyRoute, "", "Tally route for requested tally strategy")
 	flags.AddTxFlagsToCmd(cmd)
 

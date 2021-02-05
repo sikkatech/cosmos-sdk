@@ -299,7 +299,6 @@ func NewSimApp(
 		&stakingKeeper, govRouter, tallyRouter,
 	)
 
-	// TODO: Make requirement to set a Root Tally Route, panic or something if not set
 	tallyRouter.AddRoute(govtypes.RootTallyRoute, stakingtally.NewStakingTallyHandler(app.GovKeeper, app.StakingKeeper))
 	tallyRouter.AddRoute(stakingtally.TallyRoute, stakingtally.NewStakingTallyHandler(app.GovKeeper, app.StakingKeeper))
 
