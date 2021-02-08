@@ -1,4 +1,4 @@
-package stakingtally
+package tokenbalancetally
 
 import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
