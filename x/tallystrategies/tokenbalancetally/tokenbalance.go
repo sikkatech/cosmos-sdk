@@ -46,6 +46,18 @@ func handleTokenBalanceTally(ctx sdk.Context, proposal govtypes.Proposal, gk gov
 	tallyParams := gk.GetTallyParams(ctx)
 	tallyResults = govtypes.NewTallyResultFromMap(results)
 
+	denomTotalSupply := bk.GetSupply(ctx).GetTotal().AmountOf(denom)
+	// If there is no staked coins, the proposal fails
+	if denomTotalSupply.IsZero() {
+		return false, false, tallyResults
+	}
+
+	// If there is not enough quorum of votes, the proposal fails
+	percentVoting := totalVotingPower.Quo(denomTotalSupply.ToDec())
+	if percentVoting.LT(tallyParams.Quorum) {
+		return false, true, tallyResults
+	}
+
 	// If no one votes (everyone abstains), proposal fails
 	if totalVotingPower.Sub(results[types.OptionAbstain]).Equal(sdk.ZeroDec()) {
 		return false, false, tallyResults
