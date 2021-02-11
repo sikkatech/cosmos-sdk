@@ -473,3 +473,47 @@ func TestTallyValidatorMultipleDelegations(t *testing.T) {
 
 	require.True(t, tallyResults.Equals(expectedTallyResult))
 }
+
+func TestTallyNoTallyRouteProposalUsesRootTally(t *testing.T) {
+	app := simapp.Setup(false)
+	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
+
+	createValidators(t, ctx, app, []int64{5, 5, 5})
+
+	tp := TestProposalNoRoute
+	proposal, err := app.GovKeeper.SubmitProposal(ctx, tp)
+	require.NoError(t, err)
+	proposalID := proposal.ProposalId
+	proposal.Status = types.StatusVotingPeriod
+	app.GovKeeper.SetProposal(ctx, proposal)
+
+	proposal, ok := app.GovKeeper.GetProposal(ctx, proposalID)
+	require.True(t, ok)
+	passes, burnDeposits, tallyResults := app.GovKeeper.Tally(ctx, proposal)
+
+	require.False(t, passes)
+	require.True(t, burnDeposits)
+	require.True(t, tallyResults.Equals(types.EmptyTallyResult()))
+}
+
+func TestTallyRandomTallyRouteProposalUsesRootTally(t *testing.T) {
+	app := simapp.Setup(false)
+	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
+
+	createValidators(t, ctx, app, []int64{5, 5, 5})
+
+	tp := TestProposalRandRoute
+	proposal, err := app.GovKeeper.SubmitProposal(ctx, tp)
+	require.NoError(t, err)
+	proposalID := proposal.ProposalId
+	proposal.Status = types.StatusVotingPeriod
+	app.GovKeeper.SetProposal(ctx, proposal)
+
+	proposal, ok := app.GovKeeper.GetProposal(ctx, proposalID)
+	require.True(t, ok)
+	passes, burnDeposits, tallyResults := app.GovKeeper.Tally(ctx, proposal)
+
+	require.False(t, passes)
+	require.True(t, burnDeposits)
+	require.True(t, tallyResults.Equals(types.EmptyTallyResult()))
+}

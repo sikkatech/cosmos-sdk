@@ -14,7 +14,9 @@ import (
 )
 
 var (
-	TestProposal = types.NewTextProposal("Test", "description", "staking")
+	TestProposal          = types.NewTextProposal("Test", "description", "staking")
+	TestProposalNoRoute   = types.NewTextProposal("Test", "description", "")
+	TestProposalRandRoute = types.NewTextProposal("Test", "description", "Rand")
 )
 
 func createValidators(t *testing.T, ctx sdk.Context, app *simapp.SimApp, powers []int64) ([]sdk.AccAddress, []sdk.ValAddress) {
