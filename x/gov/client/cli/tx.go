@@ -26,6 +26,7 @@ const (
 	flagDepositor    = "depositor"
 	flagStatus       = "status"
 	FlagProposal     = "proposal"
+	FlagTallyRoute   = "tallyroute"
 )
 
 type proposal struct {
@@ -33,6 +34,7 @@ type proposal struct {
 	Description string
 	Type        string
 	Deposit     string
+	TallyRoute  string
 }
 
 // ProposalFlags defines the core required fields of a proposal. It is used to
@@ -43,6 +45,7 @@ var ProposalFlags = []string{
 	FlagDescription,
 	FlagProposalType,
 	FlagDeposit,
+	FlagTallyRoute,
 }
 
 // NewTxCmd returns the transaction commands for this module
@@ -97,7 +100,7 @@ Where proposal.json contains:
 
 Which is equivalent to:
 
-$ %s tx gov submit-proposal --title="Test Proposal" --description="My awesome proposal" --type="Text" --deposit="10test" --from mykey
+$ %s tx gov submit-proposal --title="Test Proposal" --description="My awesome proposal" --type="Text" --deposit="10test" --tallyroute="staking" --from mykey
 `,
 				version.AppName, version.AppName,
 			),
@@ -118,7 +121,7 @@ $ %s tx gov submit-proposal --title="Test Proposal" --description="My awesome pr
 				return err
 			}
 
-			content := types.ContentFromProposalType(proposal.Title, proposal.Description, proposal.Type)
+			content := types.ContentFromProposalType(proposal.Title, proposal.Description, proposal.Type, proposal.TallyRoute)
 
 			msg, err := types.NewMsgSubmitProposal(content, amount, clientCtx.GetFromAddress())
 			if err != nil {
@@ -138,6 +141,7 @@ $ %s tx gov submit-proposal --title="Test Proposal" --description="My awesome pr
 	cmd.Flags().String(FlagProposalType, "", "The proposal Type")
 	cmd.Flags().String(FlagDeposit, "", "The proposal deposit")
 	cmd.Flags().String(FlagProposal, "", "Proposal file path (if this path is given, other proposal flags are ignored)")
+	cmd.Flags().String(FlagTallyRoute, "", "Tally route for requested tally strategy")
 	flags.AddTxFlagsToCmd(cmd)
 
 	return cmd

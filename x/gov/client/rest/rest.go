@@ -43,6 +43,7 @@ type PostProposalReq struct {
 	ProposalType   string         `json:"proposal_type" yaml:"proposal_type"`     // Type of proposal. Initial set {PlainTextProposal }
 	Proposer       sdk.AccAddress `json:"proposer" yaml:"proposer"`               // Address of the proposer
 	InitialDeposit sdk.Coins      `json:"initial_deposit" yaml:"initial_deposit"` // Coins to add to the proposal's deposit
+	TallyRoute     string         `json:"tally_route" yaml:"tally_route"`         // Route for Tally Strategy to use
 }
 
 // DepositReq defines the properties of a deposit request's body.

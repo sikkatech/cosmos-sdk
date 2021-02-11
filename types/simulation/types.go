@@ -25,6 +25,7 @@ type Content interface {
 	GetDescription() string
 	ProposalRoute() string
 	ProposalType() string
+	TallyRoute() string
 	ValidateBasic() error
 	String() string
 }

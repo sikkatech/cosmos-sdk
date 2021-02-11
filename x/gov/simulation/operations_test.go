@@ -36,6 +36,7 @@ func (m MockWeightedProposalContent) ContentSimulatorFn() simtypes.ContentSimula
 		return types.NewTextProposal(
 			fmt.Sprintf("title-%d: %s", m.n, simtypes.RandStringOfLength(r, 100)),
 			fmt.Sprintf("description-%d: %s", m.n, simtypes.RandStringOfLength(r, 4000)),
+			fmt.Sprintf("staking"),
 		)
 	}
 }
@@ -136,7 +137,7 @@ func TestSimulateMsgDeposit(t *testing.T) {
 	accounts := getTestingAccounts(t, r, app, ctx, 3)
 
 	// setup a proposal
-	content := types.NewTextProposal("Test", "description")
+	content := types.NewTextProposal("Test", "description", "staking")
 
 	submitTime := ctx.BlockHeader().Time
 	depositPeriod := app.GovKeeper.GetDepositParams(ctx).MaxDepositPeriod
@@ -178,7 +179,7 @@ func TestSimulateMsgVote(t *testing.T) {
 	accounts := getTestingAccounts(t, r, app, ctx, 3)
 
 	// setup a proposal
-	content := types.NewTextProposal("Test", "description")
+	content := types.NewTextProposal("Test", "description", "staking")
 
 	submitTime := ctx.BlockHeader().Time
 	depositPeriod := app.GovKeeper.GetDepositParams(ctx).MaxDepositPeriod

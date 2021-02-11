@@ -44,6 +44,9 @@ func (cup *ClientUpdateProposal) ProposalRoute() string { return RouterKey }
 // ProposalType returns the type of a client update proposal.
 func (cup *ClientUpdateProposal) ProposalType() string { return ProposalTypeClientUpdate }
 
+// TallyRoute returns the tally route of a client update proposal.
+func (cup *ClientUpdateProposal) TallyRoute() string { return govtypes.RootTallyRoute }
+
 // ValidateBasic runs basic stateless validity checks
 func (cup *ClientUpdateProposal) ValidateBasic() error {
 	err := govtypes.ValidateAbstract(cup)

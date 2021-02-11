@@ -18,11 +18,12 @@ var commonArgs = []string{
 }
 
 // MsgSubmitProposal creates a tx for submit proposal
-func MsgSubmitProposal(clientCtx client.Context, from, title, description, proposalType string, extraArgs ...string) (testutil.BufferWriter, error) {
+func MsgSubmitProposal(clientCtx client.Context, from, title, description, proposalType, tallyRoute string, extraArgs ...string) (testutil.BufferWriter, error) {
 	args := append([]string{
 		fmt.Sprintf("--%s=%s", govcli.FlagTitle, title),
 		fmt.Sprintf("--%s=%s", govcli.FlagDescription, description),
 		fmt.Sprintf("--%s=%s", govcli.FlagProposalType, proposalType),
+		fmt.Sprintf("--%s=%s", govcli.FlagTallyRoute, tallyRoute),
 		fmt.Sprintf("--%s=%s", flags.FlagFrom, from),
 	}, commonArgs...)
 

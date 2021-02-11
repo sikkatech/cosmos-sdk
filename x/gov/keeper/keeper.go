@@ -31,6 +31,9 @@ type Keeper struct {
 
 	// Proposal router
 	router types.Router
+
+	// Tally router
+	tallyrouter types.TallyRouter
 }
 
 // NewKeeper returns a governance keeper. It handles:
@@ -42,7 +45,7 @@ type Keeper struct {
 // CONTRACT: the parameter Subspace must have the param key table already initialized
 func NewKeeper(
 	cdc codec.BinaryMarshaler, key sdk.StoreKey, paramSpace types.ParamSubspace,
-	authKeeper types.AccountKeeper, bankKeeper types.BankKeeper, sk types.StakingKeeper, rtr types.Router,
+	authKeeper types.AccountKeeper, bankKeeper types.BankKeeper, sk types.StakingKeeper, rtr types.Router, tallyrtr types.TallyRouter,
 ) Keeper {
 
 	// ensure governance module account is set
@@ -56,13 +59,14 @@ func NewKeeper(
 	rtr.Seal()
 
 	return Keeper{
-		storeKey:   key,
-		paramSpace: paramSpace,
-		authKeeper: authKeeper,
-		bankKeeper: bankKeeper,
-		sk:         sk,
-		cdc:        cdc,
-		router:     rtr,
+		storeKey:    key,
+		paramSpace:  paramSpace,
+		authKeeper:  authKeeper,
+		bankKeeper:  bankKeeper,
+		sk:          sk,
+		cdc:         cdc,
+		router:      rtr,
+		tallyrouter: tallyrtr,
 	}
 }
 
@@ -74,6 +78,11 @@ func (keeper Keeper) Logger(ctx sdk.Context) log.Logger {
 // Router returns the gov Keeper's Router
 func (keeper Keeper) Router() types.Router {
 	return keeper.router
+}
+
+// TallyRouter returns the gov Keeper's Router
+func (keeper Keeper) TallyRouter() types.TallyRouter {
+	return keeper.tallyrouter
 }
 
 // GetGovernanceAccount returns the governance ModuleAccount

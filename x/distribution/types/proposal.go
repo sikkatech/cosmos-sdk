@@ -39,6 +39,10 @@ func (csp *CommunityPoolSpendProposal) ProposalRoute() string { return RouterKey
 // ProposalType returns the type of a community pool spend proposal.
 func (csp *CommunityPoolSpendProposal) ProposalType() string { return ProposalTypeCommunityPoolSpend }
 
+// TallyRoute returns the tally route of the strategy that should weight votes
+// on a community pool spend proposal.
+func (csp *CommunityPoolSpendProposal) TallyRoute() string { return govtypes.RootTallyRoute }
+
 // ValidateBasic runs basic stateless validity checks
 func (csp *CommunityPoolSpendProposal) ValidateBasic() error {
 	err := govtypes.ValidateAbstract(csp)

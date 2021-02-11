@@ -44,7 +44,7 @@ func TestMsgSubmitProposal(t *testing.T) {
 
 	for i, tc := range tests {
 		msg, err := NewMsgSubmitProposal(
-			ContentFromProposalType(tc.title, tc.description, tc.proposalType),
+			ContentFromProposalType(tc.title, tc.description, tc.proposalType, "test"),
 			tc.initialDeposit,
 			tc.proposerAddr,
 		)
@@ -120,13 +120,13 @@ func TestMsgVote(t *testing.T) {
 
 // this tests that Amino JSON MsgSubmitProposal.GetSignBytes() still works with Content as Any using the ModuleCdc
 func TestMsgSubmitProposal_GetSignBytes(t *testing.T) {
-	msg, err := NewMsgSubmitProposal(NewTextProposal("test", "abcd"), sdk.NewCoins(), sdk.AccAddress{})
+	msg, err := NewMsgSubmitProposal(NewTextProposal("test", "abcd", "test"), sdk.NewCoins(), sdk.AccAddress{})
 	require.NoError(t, err)
 	var bz []byte
 	require.NotPanics(t, func() {
 		bz = msg.GetSignBytes()
 	})
 	require.Equal(t,
-		`{"type":"cosmos-sdk/MsgSubmitProposal","value":{"content":{"type":"cosmos-sdk/TextProposal","value":{"description":"abcd","title":"test"}},"initial_deposit":[]}}`,
+		`{"type":"cosmos-sdk/MsgSubmitProposal","value":{"content":{"type":"cosmos-sdk/TextProposal","value":{"description":"abcd","tallystrategy":"test","title":"test"}},"initial_deposit":[]}}`,
 		string(bz))
 }

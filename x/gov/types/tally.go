@@ -6,27 +6,13 @@ import (
 	sdk "github.com/cosmos/cosmos-sdk/types"
 )
 
-// ValidatorGovInfo used for tallying
-type ValidatorGovInfo struct {
-	Address             sdk.ValAddress // address of the validator operator
-	BondedTokens        sdk.Int        // Power of a Validator
-	DelegatorShares     sdk.Dec        // Total outstanding delegator shares
-	DelegatorDeductions sdk.Dec        // Delegator deductions from validator's delegators voting independently
-	Vote                VoteOption     // Vote of the validator
-}
+// Governance message types and routes
+const (
+	RootTallyRoute = "root"
+)
 
-// NewValidatorGovInfo creates a ValidatorGovInfo instance
-func NewValidatorGovInfo(address sdk.ValAddress, bondedTokens sdk.Int, delegatorShares,
-	delegatorDeductions sdk.Dec, vote VoteOption) ValidatorGovInfo {
-
-	return ValidatorGovInfo{
-		Address:             address,
-		BondedTokens:        bondedTokens,
-		DelegatorShares:     delegatorShares,
-		DelegatorDeductions: delegatorDeductions,
-		Vote:                vote,
-	}
-}
+// TallyStrategy defines a function that takes takes a proposal at the end of the Voting period and returns the result
+type TallyStrategy func(ctx sdk.Context, proposal Proposal) (passes bool, burnDeposits bool, tallyResults TallyResult)
 
 // NewTallyResult creates a new TallyResult instance
 func NewTallyResult(yes, abstain, no, noWithVeto sdk.Int) TallyResult {

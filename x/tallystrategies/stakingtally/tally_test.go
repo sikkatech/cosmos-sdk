@@ -1,4 +1,4 @@
-package keeper_test
+package stakingtally_test
 
 import (
 	"testing"
@@ -11,6 +11,7 @@ import (
 	"github.com/cosmos/cosmos-sdk/x/gov/types"
 	"github.com/cosmos/cosmos-sdk/x/staking"
 	stakingtypes "github.com/cosmos/cosmos-sdk/x/staking/types"
+	stakingtally "github.com/cosmos/cosmos-sdk/x/tallystrategies/stakingtally"
 )
 
 func TestTallyNoOneVotes(t *testing.T) {
@@ -28,7 +29,9 @@ func TestTallyNoOneVotes(t *testing.T) {
 
 	proposal, ok := app.GovKeeper.GetProposal(ctx, proposalID)
 	require.True(t, ok)
-	passes, burnDeposits, tallyResults := app.GovKeeper.Tally(ctx, proposal)
+
+	tally := stakingtally.NewStakingTallyHandler(app.GovKeeper, app.StakingKeeper)
+	passes, burnDeposits, tallyResults := tally(ctx, proposal)
 
 	require.False(t, passes)
 	require.True(t, burnDeposits)
@@ -55,7 +58,8 @@ func TestTallyNoQuorum(t *testing.T) {
 
 	proposal, ok := app.GovKeeper.GetProposal(ctx, proposalID)
 	require.True(t, ok)
-	passes, burnDeposits, _ := app.GovKeeper.Tally(ctx, proposal)
+	tally := stakingtally.NewStakingTallyHandler(app.GovKeeper, app.StakingKeeper)
+	passes, burnDeposits, _ := tally(ctx, proposal)
 	require.False(t, passes)
 	require.True(t, burnDeposits)
 }
@@ -79,7 +83,8 @@ func TestTallyOnlyValidatorsAllYes(t *testing.T) {
 
 	proposal, ok := app.GovKeeper.GetProposal(ctx, proposalID)
 	require.True(t, ok)
-	passes, burnDeposits, tallyResults := app.GovKeeper.Tally(ctx, proposal)
+	tally := stakingtally.NewStakingTallyHandler(app.GovKeeper, app.StakingKeeper)
+	passes, burnDeposits, tallyResults := tally(ctx, proposal)
 
 	require.True(t, passes)
 	require.False(t, burnDeposits)
@@ -104,7 +109,8 @@ func TestTallyOnlyValidators51No(t *testing.T) {
 
 	proposal, ok := app.GovKeeper.GetProposal(ctx, proposalID)
 	require.True(t, ok)
-	passes, burnDeposits, _ := app.GovKeeper.Tally(ctx, proposal)
+	tally := stakingtally.NewStakingTallyHandler(app.GovKeeper, app.StakingKeeper)
+	passes, burnDeposits, _ := tally(ctx, proposal)
 
 	require.False(t, passes)
 	require.False(t, burnDeposits)
@@ -128,7 +134,8 @@ func TestTallyOnlyValidators51Yes(t *testing.T) {
 
 	proposal, ok := app.GovKeeper.GetProposal(ctx, proposalID)
 	require.True(t, ok)
-	passes, burnDeposits, tallyResults := app.GovKeeper.Tally(ctx, proposal)
+	tally := stakingtally.NewStakingTallyHandler(app.GovKeeper, app.StakingKeeper)
+	passes, burnDeposits, tallyResults := tally(ctx, proposal)
 
 	require.True(t, passes)
 	require.False(t, burnDeposits)
@@ -154,7 +161,8 @@ func TestTallyOnlyValidatorsVetoed(t *testing.T) {
 
 	proposal, ok := app.GovKeeper.GetProposal(ctx, proposalID)
 	require.True(t, ok)
-	passes, burnDeposits, tallyResults := app.GovKeeper.Tally(ctx, proposal)
+	tally := stakingtally.NewStakingTallyHandler(app.GovKeeper, app.StakingKeeper)
+	passes, burnDeposits, tallyResults := tally(ctx, proposal)
 
 	require.False(t, passes)
 	require.True(t, burnDeposits)
@@ -180,7 +188,8 @@ func TestTallyOnlyValidatorsAbstainPasses(t *testing.T) {
 
 	proposal, ok := app.GovKeeper.GetProposal(ctx, proposalID)
 	require.True(t, ok)
-	passes, burnDeposits, tallyResults := app.GovKeeper.Tally(ctx, proposal)
+	tally := stakingtally.NewStakingTallyHandler(app.GovKeeper, app.StakingKeeper)
+	passes, burnDeposits, tallyResults := tally(ctx, proposal)
 
 	require.True(t, passes)
 	require.False(t, burnDeposits)
@@ -206,7 +215,8 @@ func TestTallyOnlyValidatorsAbstainFails(t *testing.T) {
 
 	proposal, ok := app.GovKeeper.GetProposal(ctx, proposalID)
 	require.True(t, ok)
-	passes, burnDeposits, tallyResults := app.GovKeeper.Tally(ctx, proposal)
+	tally := stakingtally.NewStakingTallyHandler(app.GovKeeper, app.StakingKeeper)
+	passes, burnDeposits, tallyResults := tally(ctx, proposal)
 
 	require.False(t, passes)
 	require.False(t, burnDeposits)
@@ -232,7 +242,8 @@ func TestTallyOnlyValidatorsNonVoter(t *testing.T) {
 
 	proposal, ok := app.GovKeeper.GetProposal(ctx, proposalID)
 	require.True(t, ok)
-	passes, burnDeposits, tallyResults := app.GovKeeper.Tally(ctx, proposal)
+	tally := stakingtally.NewStakingTallyHandler(app.GovKeeper, app.StakingKeeper)
+	passes, burnDeposits, tallyResults := tally(ctx, proposal)
 
 	require.False(t, passes)
 	require.False(t, burnDeposits)
@@ -268,7 +279,8 @@ func TestTallyDelgatorOverride(t *testing.T) {
 
 	proposal, ok := app.GovKeeper.GetProposal(ctx, proposalID)
 	require.True(t, ok)
-	passes, burnDeposits, tallyResults := app.GovKeeper.Tally(ctx, proposal)
+	tally := stakingtally.NewStakingTallyHandler(app.GovKeeper, app.StakingKeeper)
+	passes, burnDeposits, tallyResults := tally(ctx, proposal)
 
 	require.False(t, passes)
 	require.False(t, burnDeposits)
@@ -303,7 +315,8 @@ func TestTallyDelgatorInherit(t *testing.T) {
 
 	proposal, ok := app.GovKeeper.GetProposal(ctx, proposalID)
 	require.True(t, ok)
-	passes, burnDeposits, tallyResults := app.GovKeeper.Tally(ctx, proposal)
+	tally := stakingtally.NewStakingTallyHandler(app.GovKeeper, app.StakingKeeper)
+	passes, burnDeposits, tallyResults := tally(ctx, proposal)
 
 	require.True(t, passes)
 	require.False(t, burnDeposits)
@@ -343,7 +356,8 @@ func TestTallyDelgatorMultipleOverride(t *testing.T) {
 
 	proposal, ok := app.GovKeeper.GetProposal(ctx, proposalID)
 	require.True(t, ok)
-	passes, burnDeposits, tallyResults := app.GovKeeper.Tally(ctx, proposal)
+	tally := stakingtally.NewStakingTallyHandler(app.GovKeeper, app.StakingKeeper)
+	passes, burnDeposits, tallyResults := tally(ctx, proposal)
 
 	require.False(t, passes)
 	require.False(t, burnDeposits)
@@ -384,7 +398,8 @@ func TestTallyDelgatorMultipleInherit(t *testing.T) {
 
 	proposal, ok := app.GovKeeper.GetProposal(ctx, proposalID)
 	require.True(t, ok)
-	passes, burnDeposits, tallyResults := app.GovKeeper.Tally(ctx, proposal)
+	tally := stakingtally.NewStakingTallyHandler(app.GovKeeper, app.StakingKeeper)
+	passes, burnDeposits, tallyResults := tally(ctx, proposal)
 
 	require.False(t, passes)
 	require.False(t, burnDeposits)
@@ -427,7 +442,8 @@ func TestTallyJailedValidator(t *testing.T) {
 
 	proposal, ok := app.GovKeeper.GetProposal(ctx, proposalID)
 	require.True(t, ok)
-	passes, burnDeposits, tallyResults := app.GovKeeper.Tally(ctx, proposal)
+	tally := stakingtally.NewStakingTallyHandler(app.GovKeeper, app.StakingKeeper)
+	passes, burnDeposits, tallyResults := tally(ctx, proposal)
 
 	require.True(t, passes)
 	require.False(t, burnDeposits)
@@ -460,7 +476,8 @@ func TestTallyValidatorMultipleDelegations(t *testing.T) {
 
 	proposal, ok := app.GovKeeper.GetProposal(ctx, proposalID)
 	require.True(t, ok)
-	passes, burnDeposits, tallyResults := app.GovKeeper.Tally(ctx, proposal)
+	tally := stakingtally.NewStakingTallyHandler(app.GovKeeper, app.StakingKeeper)
+	passes, burnDeposits, tallyResults := tally(ctx, proposal)
 
 	require.True(t, passes)
 	require.False(t, burnDeposits)
@@ -472,26 +489,4 @@ func TestTallyValidatorMultipleDelegations(t *testing.T) {
 	expectedTallyResult := types.NewTallyResult(expectedYes, expectedAbstain, expectedNo, expectedNoWithVeto)
 
 	require.True(t, tallyResults.Equals(expectedTallyResult))
-}
-
-func TestTallyNoTallyRouteProposalUsesRootTally(t *testing.T) {
-	app := simapp.Setup(false)
-	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
-
-	createValidators(t, ctx, app, []int64{5, 5, 5})
-
-	tp := TestProposalNoRoute
-	_, err := app.GovKeeper.SubmitProposal(ctx, tp)
-	require.Error(t, err)
-}
-
-func TestTallyRandomTallyRouteProposalUsesRootTally(t *testing.T) {
-	app := simapp.Setup(false)
-	ctx := app.BaseApp.NewContext(false, tmproto.Header{})
-
-	createValidators(t, ctx, app, []int64{5, 5, 5})
-
-	tp := TestProposalRandRoute
-	_, err := app.GovKeeper.SubmitProposal(ctx, tp)
-	require.Error(t, err)
 }

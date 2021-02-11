@@ -105,6 +105,7 @@ func TestMigrate(t *testing.T) {
 			"content": {
 				"@type": "/cosmos.gov.v1beta1.TextProposal",
 				"description": "bar_text",
+				"tallystrategy": "",
 				"title": "foo_text"
 			},
 			"deposit_end_time": "0001-01-01T00:00:00Z",

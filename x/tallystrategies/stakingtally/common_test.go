@@ -1,4 +1,4 @@
-package keeper_test
+package stakingtally_test
 
 import (
 	"testing"
@@ -14,9 +14,7 @@ import (
 )
 
 var (
-	TestProposal          = types.NewTextProposal("Test", "description", "staking")
-	TestProposalNoRoute   = types.NewTextProposal("Test", "description", "")
-	TestProposalRandRoute = types.NewTextProposal("Test", "description", "Rand")
+	TestProposal = types.NewTextProposal("Test", "description", "staking")
 )
 
 func createValidators(t *testing.T, ctx sdk.Context, app *simapp.SimApp, powers []int64) ([]sdk.AccAddress, []sdk.ValAddress) {
