@@ -67,14 +67,15 @@ func TestSubmitProposal(t *testing.T) {
 		content     types.Content
 		expectedErr error
 	}{
-		{&types.TextProposal{Title: "title", Description: "description"}, nil},
+		{&types.TextProposal{Title: "title", Description: "description", Tallystrategy: "root"}, nil},
 		// Keeper does not check the validity of title and description, no error
-		{&types.TextProposal{Title: "", Description: "description"}, nil},
-		{&types.TextProposal{Title: strings.Repeat("1234567890", 100), Description: "description"}, nil},
-		{&types.TextProposal{Title: "title", Description: ""}, nil},
-		{&types.TextProposal{Title: "title", Description: strings.Repeat("1234567890", 1000)}, nil},
+		{&types.TextProposal{Title: "", Description: "description", Tallystrategy: "root"}, nil},
+		{&types.TextProposal{Title: strings.Repeat("1234567890", 100), Description: "description", Tallystrategy: "root"}, nil},
+		{&types.TextProposal{Title: "title", Description: "", Tallystrategy: "root"}, nil},
+		{&types.TextProposal{Title: "title", Description: strings.Repeat("1234567890", 1000), Tallystrategy: "root"}, nil},
 		// error only when invalid route
 		{&invalidProposalRoute{}, types.ErrNoProposalHandlerExists},
+		{&types.TextProposal{Title: "title", Description: "description", Tallystrategy: ""}, types.ErrInvalidTallyRoute},
 	}
 
 	for i, tc := range testCases {

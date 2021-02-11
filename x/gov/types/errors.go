@@ -14,4 +14,5 @@ var (
 	ErrInvalidVote             = sdkerrors.Register(ModuleName, 7, "invalid vote option")
 	ErrInvalidGenesis          = sdkerrors.Register(ModuleName, 8, "invalid genesis state")
 	ErrNoProposalHandlerExists = sdkerrors.Register(ModuleName, 9, "no handler exists for proposal type")
+	ErrInvalidTallyRoute       = sdkerrors.Register(ModuleName, 10, "invalid tally route provided")
 )

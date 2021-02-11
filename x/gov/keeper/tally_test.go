@@ -481,19 +481,8 @@ func TestTallyNoTallyRouteProposalUsesRootTally(t *testing.T) {
 	createValidators(t, ctx, app, []int64{5, 5, 5})
 
 	tp := TestProposalNoRoute
-	proposal, err := app.GovKeeper.SubmitProposal(ctx, tp)
-	require.NoError(t, err)
-	proposalID := proposal.ProposalId
-	proposal.Status = types.StatusVotingPeriod
-	app.GovKeeper.SetProposal(ctx, proposal)
-
-	proposal, ok := app.GovKeeper.GetProposal(ctx, proposalID)
-	require.True(t, ok)
-	passes, burnDeposits, tallyResults := app.GovKeeper.Tally(ctx, proposal)
-
-	require.False(t, passes)
-	require.True(t, burnDeposits)
-	require.True(t, tallyResults.Equals(types.EmptyTallyResult()))
+	_, err := app.GovKeeper.SubmitProposal(ctx, tp)
+	require.Error(t, err)
 }
 
 func TestTallyRandomTallyRouteProposalUsesRootTally(t *testing.T) {
@@ -503,17 +492,6 @@ func TestTallyRandomTallyRouteProposalUsesRootTally(t *testing.T) {
 	createValidators(t, ctx, app, []int64{5, 5, 5})
 
 	tp := TestProposalRandRoute
-	proposal, err := app.GovKeeper.SubmitProposal(ctx, tp)
-	require.NoError(t, err)
-	proposalID := proposal.ProposalId
-	proposal.Status = types.StatusVotingPeriod
-	app.GovKeeper.SetProposal(ctx, proposal)
-
-	proposal, ok := app.GovKeeper.GetProposal(ctx, proposalID)
-	require.True(t, ok)
-	passes, burnDeposits, tallyResults := app.GovKeeper.Tally(ctx, proposal)
-
-	require.False(t, passes)
-	require.True(t, burnDeposits)
-	require.True(t, tallyResults.Equals(types.EmptyTallyResult()))
+	_, err := app.GovKeeper.SubmitProposal(ctx, tp)
+	require.Error(t, err)
 }
