@@ -189,7 +189,8 @@ func (status ProposalStatus) Format(s fmt.State, verb rune) {
 
 // Proposal types
 const (
-	ProposalTypeText string = "Text"
+	ProposalTypeText        string = "Text"
+	ProposalTypeExecuteMsgs string = "ExecuteMsgs"
 )
 
 // Implements Content Interface
@@ -213,7 +214,9 @@ func (tp *TextProposal) ProposalRoute() string { return RouterKey }
 func (tp *TextProposal) ProposalType() string { return ProposalTypeText }
 
 // ProposalType is "Text"
-func (tp *TextProposal) TallyRoute() string { return tp.Tallystrategy }
+func (tp *TextProposal) TallyRoute() string {
+	return tp.Tallystrategy
+}
 
 // ValidateBasic validates the content's title and description of the proposal
 func (tp *TextProposal) ValidateBasic() error { return ValidateAbstract(tp) }
@@ -221,6 +224,66 @@ func (tp *TextProposal) ValidateBasic() error { return ValidateAbstract(tp) }
 // String implements Stringer interface
 func (tp TextProposal) String() string {
 	out, _ := yaml.Marshal(tp)
+	return string(out)
+}
+
+// Implements Content Interface
+var _ Content = &ExecuteMsgsProposal{}
+
+// NewExecuteMsgsProposal creates a text proposal Content
+func NewExecuteMsgsProposal(title, description string, msgs []sdk.Msg) Content {
+	anys, _ := sdk.EncodeMsgs(msgs)
+
+	return &ExecuteMsgsProposal{
+		title,
+		description,
+		anys,
+	}
+}
+
+// GetTitle returns the proposal title
+func (emp *ExecuteMsgsProposal) GetTitle() string { return emp.Title }
+
+// GetDescription returns the proposal description
+func (emp *ExecuteMsgsProposal) GetDescription() string { return emp.Description }
+
+// ProposalRoute returns the proposal router key
+func (emp *ExecuteMsgsProposal) ProposalRoute() string { return RouterKey }
+
+// ProposalType is "Text"
+func (emp *ExecuteMsgsProposal) ProposalType() string { return ProposalTypeExecuteMsgs }
+
+// TallyRoute is the required msgs Signer
+func (emp *ExecuteMsgsProposal) TallyRoute() string {
+	msgs := sdk.DecodeMsgs(emp.Messages)
+	return sdk.GetSignersMsgs(msgs)[0].String()
+}
+
+// ValidateBasic validates the content's title and description of the proposal
+func (emp *ExecuteMsgsProposal) ValidateBasic() error {
+	err := ValidateAbstract(emp)
+	if err != nil {
+		return err
+	}
+
+	msgs := sdk.DecodeMsgs(emp.Messages)
+
+	err = sdk.ValidateBasicMsgs(msgs)
+	if err != nil {
+		return err
+	}
+
+	signers := sdk.GetSignersMsgs(msgs)
+	if len(signers) != 1 {
+		return sdkerrors.Wrapf(sdkerrors.ErrNotSupported, "can only execute msgs with single signers")
+	}
+
+	return nil
+}
+
+// String implements Stringer interface
+func (emp ExecuteMsgsProposal) String() string {
+	out, _ := yaml.Marshal(emp)
 	return string(out)
 }
 
